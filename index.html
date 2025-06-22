@@ -4,27 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tour & Travel</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.6/css/unicons.css">
 
 </head>
 <body>
-    <header class="header">
-        <a href="#" class="logo"><i class="fas fa-hiking"></i> travel.com</a>
-        <nav class="navbar">
-            <div id="nav-close" class="fas fa-times"></div>
-            <a href="#home">home</a>
-            <a href="#category">Adventures</a>
-            <a href="#packages">packages</a>
-            <a href="#contact">contact</a>
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo"><i class="fas fa-hiking"></i> travel.com</a>
+
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="#home" class="nav__link active-link">Home</a></li>
+                    <li class="nav__item"><a href="#category" class="nav__link">Adventures</a></li>
+                    <li class="nav__item"><a href="#packages" class="nav__link">Packages</a></li>
+                    <li class="nav__item"><a href="#contact" class="nav__link">Contact</a></li>
+                </ul>
+                <i class="fas fa-times nav__close" id="nav-close"></i>
+            </div>
+
+            <div class="nav__btns">
+                <div id="search-btn" class="fas fa-search"></div>
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
         </nav>
-        <div class="icons">
-            <div id="menu-btn" class="fas fa-bars"></div> 
-            <div id="search-btn" class="fas fa-search"></div>
-          
-        </div>
     </header>
+
     <div class="search-form">
         <div id="close-search" class="fas fa-times"></div>
         <form action="">
@@ -33,197 +46,183 @@
         </form>
     </div>
     
-
-    <section class="home" id="home">
-   
-        <div class="wrapper">
-           
-                <div class="box" style="background: url(images/home1.jpg) no-repeat;">
-                <div class="content">
-                    <span>never stop</span>
-                    <h3>exploring</h3>
-                    <p>Travel.com offers best deals on India tour packages.</p>
-                    <a href="#category" class="btn">get started</a>
+    <main class="main">
+        <section class="home" id="home">
+            <div class="home__container container grid">
+                <div class="home__data">
+                    <span class="home__data-subtitle">Discover your place</span>
+                    <h1 class="home__data-title">Explore The <br> Best <b>Beautiful <br> Destinations</b></h1>
+                    <a href="#" class="button">Explore</a>
                 </div>
-                </div>  
+
+                <div class="home__social">
+                    <a href="https://www.facebook.com/" target="_blank" class="home__social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/" target="_blank" class="home__social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="https://twitter.com/" target="_blank" class="home__social-link"><i class="fab fa-twitter"></i></a>
+                </div>
+
+                <div class="home__info">
+                    <div>
+                        <span class="home__info-title">5 best places to visit</span>
+                        <a href="" class="button button--flex button--link home__info-button">
+                            More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="home__info-overlay">
+                        <img src="images/home1.jpg" alt="" class="home__info-img">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="category section" id="category">
+            <h2 class="section__title">Top Adventures <br> For You</h2>
+            <div class="category__container container grid">
+                <div class="category__card">
+                    <img src="images/category-1.jpg" alt="BungeeJumpingImg">
+                    <h3>bungee jump</h3>
+                    <p>An activity that involves a person jumping from a great height while connected to a large elastic cord.</p>
+                    <a href="https://en.wikipedia.org/wiki/Bungee_jumping" class="button">Read More</a>
+                </div>
+                <div class="category__card">
+                    <img src="images/category-2.jpg" alt="ZipLinesImg">
+                    <h3>zip lines</h3>
+                    <p>A pulley suspended on a cable, usually made of stainless steel, mounted on a slope.</p>
+                    <a href="https://en.wikipedia.org/wiki/Zip_line" class="button">Read More</a>
+                </div>
+                <div class="category__card">
+                    <img src="images/category-3.jpg" alt="canoeingImg">
+                    <h3>Canoeing</h3>
+                    <p>An activity which involves paddling a canoe with a single-bladed paddle for recreation or sport.</p>
+                    <a href="https://en.wikipedia.org/wiki/Canoeing" class="button">Read More</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="packages section" id="packages">
+            <h2 class="section__title">Our Popular Packages</h2>
+            <div class="packages__container container grid">
+                <div class="package__card">
+                    <div class="package__image">
+                        <img src="images/img-1.jpg" alt="">
+                    </div>
+                    <div class="package__content">
+                        <h3>Manali Package</h3>
+                        <p>Experience the perfect solitude and calmness at its best in Kullu Manali Shimla.</p>
+                        <div class="package__price">Rs 5,999 - Rs 8,999</div>
+                        <a href="#contact" class="button">Explore Now</a>
+                    </div>
+                </div>
+                <div class="package__card">
+                    <div class="package__image">
+                        <img src="images/img-2.jpg" alt="">
+                    </div>
+                    <div class="package__content">
+                        <h3>Goa Package</h3>
+                        <p>Enjoy the famous nightlife, beaches, and a wide range of water sports in Baga, Goa.</p>
+                        <div class="package__price">Rs 7,999 - Rs 12,999</div>
+                        <a href="#contact" class="button">Explore Now</a>
+                    </div>
+                </div>
+                <div class="package__card">
+                    <div class="package__image">
+                        <img src="images/img-3.jpg" alt="">
+                    </div>
+                    <div class="package__content">
+                        <h3>Delhi Package</h3>
+                        <p>Explore Delhi's cultural diversity, rich heritage, temples, forts, and museums with a guide.</p>
+                        <div class="package__price">Rs 2,999 - Rs 8,999</div>
+                        <a href="#contact" class="button">Explore Now</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonial section">
+            <h2 class="section__title">What Our Clients Say</h2>
+            <div class="testimonial__container container">
+                <div class="testimonial__card">
+                    <img src="images/img-4.jpg" alt="Client 1" class="testimonial__img">
+                    <p>"An unforgettable experience! The team at Travel.com organized everything perfectly. Highly recommended!"</p>
+                    <h4>- Jessica Jones</h4>
+                    <div class="testimonial__stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="contact section" id="contact">
+            <h2 class="section__title">Get In Touch</h2>
+            <div class="contact__container container grid">
+                <div class="contact__content">
+                    <h3 class="contact__title">Talk to us</h3>
+                    <div class="contact__info">
+                        <div class="contact__card">
+                            <i class="fas fa-envelope contact__card-icon"></i>
+                            <h3 class="contact__card-title">Email</h3>
+                            <span class="contact__card-data">prajwalps2604@gmail.com</span>
+                            <a href="mailto:prajwalps2604@gmail.com" class="contact__button">Write me <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="contact__card">
+                            <i class="fab fa-whatsapp contact__card-icon"></i>
+                            <h3 class="contact__card-title">Whatsapp</h3>
+                            <span class="contact__card-data">+91 7411396847</span>
+                            <a href="https://api.whatsapp.com/send?phone=917411396847&text=Hello, more information!" target="_blank" class="contact__button">Write me <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="contact__card">
+                            <i class="fab fa-linkedin contact__card-icon"></i>
+                            <h3 class="contact__card-title">LinkedIn</h3>
+                            <span class="contact__card-data">prajwal-poojary</span>
+                            <a href="https://www.linkedin.com/in/prajwal-poojary-67ba4a2a3/" target="_blank" class="contact__button">Write me <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact__content">
+                    <h3 class="contact__title">Write me your project</h3>
+                    <form action="https://formspree.io/f/xblyzjky" method="POST" class="contact__form">
+                        <div class="contact__form-div">
+                            <label for="name" class="contact__form-tag">Name</label>
+                            <input type="text" id="name" name="name" placeholder="Insert your name" class="contact__form-input" required>
+                        </div>
+                        <div class="contact__form-div">
+                            <label for="email" class="contact__form-tag">Mail</label>
+                            <input type="email" id="email" name="email" placeholder="Insert your email" class="contact__form-input" required>
+                        </div>
+                        <div class="contact__form-div contact__form-area">
+                            <label for="message" class="contact__form-tag">Project</label>
+                            <textarea name="message" id="message" cols="30" rows="10" placeholder="Write your project" class="contact__form-input" required></textarea>
+                        </div>
+                        <button class="button" type="submit">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__container container">
+            <h1 class="footer__title">travel.com</h1>
+            <ul class="footer__list">
+                <li><a href="#category" class="footer__link">Adventures</a></li>
+                <li><a href="#packages" class="footer__link">Packages</a></li>
+                <li><a href="#contact" class="footer__link">Contact</a></li>
+            </ul>
+
+            <ul class="footer__social">
+                <a href="https://www.facebook.com/" target="_blank" class="footer__social-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/" target="_blank" class="footer__social-link"><i class="fab fa-instagram"></i></a>
+                <a href="https://twitter.com/" target="_blank" class="footer__social-link"><i class="fab fa-twitter"></i></a>
+            </ul>
+            <span class="footer__copy">&#169; Prajwal. All rights reserved</span>
         </div>
-    </section>
+    </footer>
 
-    <section class="category" id="category">
+    <a href="#" class="scrollup" id="scroll-up">
+        <i class="fas fa-arrow-up scrollup__icon"></i>
+    </a>
 
-        <h1 class="heading">Adventure Idea!</h1>
-    
-        <div class="box-container">
-    
-            <div class="box">
-                <img src="images/category-1.jpg" alt="BungeeJumpingImg">
-                <h3>bungee jump</h3>
-                <p>Bungee jumping is an activity that involves a person jumping from a great height while connected to a large elastic cord.</p>
-                <a href="https://en.wikipedia.org/wiki/Bungee_jumping" class="btn">read more</a>
-            </div>
-    
-            <div class="box">
-                <img src="images/category-2.jpg" alt="ZipLinesImg">
-                <h3>zip lines</h3>
-                <p>A zip-line, zip line, zip-wire, or flying fox is a pulley suspended on a cable, usually made of stainless steel, mounted on a slope.</p>
-                <a href="https://en.wikipedia.org/wiki/Zip_line" class="btn">read more</a>
-            </div>
-    
-            <div class="box">
-                <img src="images/category-3.jpg" alt="canoeingImg">
-                <h3>Canoeing</h3>
-                <p>Canoeing is an activity which involves paddling a canoe with a single-bladed paddle.</p>
-                <a href="https://en.wikipedia.org/wiki/Canoeing" class="btn">read more</a>
-            </div>
-    
-        </div>
-    
-    </section>
-    <section class="packages" id="packages">
-
-        <h1 class="heading">popular packages</h1>
-    
-        <div class="box-container">
-    
-            <div class="box">
-                <div class="image">
-                    <img src="images/img-1.jpg" alt="">
-                </div>
-                <div class="content">
-                    <h3>Manali Package</h3>
-                    <p>Kullu Manali Shimla has always been a very popular destination for the old, young travelers as well as newly married couples who look for cheapest Manali tour packages &amp; Manali Honeymoon Packages to experience the perfect solitude and calmness at its best.</p>
-                    <div class="price">Rs 5,999 - Rs 8,999</div>
-                    <a href="#contact" class="btn">explore now</a>
-                </div>
-            </div>
-    
-            <div class="box">
-                <div class="image">
-                    <img src="images/img-2.jpg" alt="">
-                </div>
-                <div class="content">
-                    <h3>Goa Package</h3>
-                    <p>The most popular beach of Goa, Baga is located close to Calangute beach, around 30 Km North of Panaji. Baga is popular for its nightlife with some very famous clubs such as Brittos, Titos and Mambos.There is also a range of water sports that you can try your hands at.</p>
-                    <div class="price">Rs 7,999 - Rs 12,999</div>
-                    <a href="#contact" class="btn">explore now</a>
-                </div>
-            </div>
-    
-            <div class="box">
-                <div class="image">
-                    <img src="images/img-3.jpg" alt="">
-                </div>
-                <div class="content">
-                    <h3>Delhi Package</h3>
-                    <p>Boasting cultural diversity and rich heritage, Delhi is home to several temples, tombs, gardens, forts, museums, markets and more. We take you to some of the best spots in the city. Pick the best packages from here and enjoy the tour of Delhi with guide.</p>
-                    <div class="price">Rs 2,999 - Rs 8,999</div>
-                    <a href="#contact" class="btn">explore now</a>
-                </div>
-            </div>
-    
-            <div class="box">
-                <div class="image">
-                    <img src="images/img-4.jpg" alt="">
-                </div>
-                <div class="content">
-                    <h3>Jaipur Package</h3>
-
-                    <p>We organise Jaipur &amp; Rajasthan tours that offer incredible attractions like Forts and Palaces, Deserts, Traditional Villages, colorful cattle fairs, sacred places, camel safaris, beautiful lakes, hill stations and the people. </p>
-                    <div class="price">Rs 11,999 - Rs15,999</div>
-
-                    <p>We organise Jaipur & Rajasthan tours that offer incredible attractions like Forts and Palaces, Deserts, Traditional Villages, colorful cattle fairs, sacred places, camel safaris, beautiful lakes, hill stations and the people. </p>
-                    <div class="price">Rs 11,999 - Rs 15,999</div>
-
-                    <a href="#contact" class="btn">explore now</a>
-                </div>
-            </div>
-    
-            <div class="box">
-                <div class="image">
-                    <img src="images/img-5.jpg" alt="">
-                </div>
-                <div class="content">
-                    <h3>Kerala Package</h3>
-                    <p>A trip to Kerala is always an experience through greenery to the hills and its climate. Browse through our hand-picked Kerala tour packages prepared for you. Our experts are also available to prepare customised tourism packages</p>
-                    <div class="price">Rs 4,999 - Rs 9,999</div>
-                    <a href="#contact" class="btn">explore now</a>
-                </div>
-            </div>
-    
-            <div class="box">
-                <div class="image">
-                    <img src="images/img-6.jpg" alt="">
-                </div>
-                <div class="content">
-                    <h3>Darjeeling Package</h3>
-                    <p>A trip to Darjeeling will include a ride on the famous Himalayan Railway, a visit to Tiger Hill, or a tour of the stunning landscaped gardens here. Activities like hiking and boating. Do not miss out on a trip to Darjeeling Is famous Mall Road</p>
-                    <div class="price">Rs 20,000 - Rs 25,000</div>
-                    <a href="#contact" class="btn">explore now</a>
-                </div>
-            </div>
-    
-        </div>
-    
-    </section>
-    <section class="contact" id="contact">
-    
-    <div class="wrapper1">
-        <div class="title1">
-          <h1>Contact us</h1>
-        </div>
-        <div class="contact-form">
-            <form method = "post" action = "contact_us.php">
-          <div class="input-fields">
-            
-            <input type="text" class="input"  placeholder="Name" name="name">
-            <input type="email" class="input"  placeholder="Email Address" name="email" pattern=".+@gmail\.com">
-            <input type="phone" class="input"  placeholder="Phone" name="phone">
-            <input type="text" class="input"  placeholder="Subject" name="subject">
-          </div>
-          <div class="msg">
-            <textarea placeholder="Message" name="message"></textarea> <br>
-            <div class="btn1"><button type="submit">send <i class="uil uil-message"></i></div>
-          </div>
-          </form>
-        </div>
-        </div> 
-    
-    </section>
-    <section class="footer">
-
-        <div class="box-container">
-    
-            <div class="box">
-                <h3>Quick links</h3>
-                <a href="#home">home</a>    
-                <a href="#packages">packages</a>
-                <a href="#query">query</a>
-            </div>
-    
-            <div class="box">
-                <h3>extra links</h3>
-                <a href="#contact">ask questions</a>
-                <a href="#">terms of use</a>
-                <a href="#">privacy policy</a>
-            </div>
-    
-            <div class="box">
-                <h3>contact info</h3>
-                <a href="tel:+917411396847"> <i class="fas fa-phone"></i> +91 7411396847 </a>
-                <a href="mailto: prajwalps2604@gmail.com"> <i class="fas fa-envelope"></i> prajwalps2604@gmail.com </a>
-                <a href="#"> <i class="fas fa-map"></i> Mangalore, india - 574146 </a>
-            </div>
-    
-            <div class="box">
-                <h3>follow us</h3>
-                <a href="https://www.facebook.com/profile.php?id=61554574627566"> <i class="fab fa-facebook-f"></i> facebook </a>
-                <a href="https://www.instagram.com/_.prajwal._26?igsh=NWNrajY4ZWVhYWps"> <i class="fab fa-instagram"></i> instagram </a>
-                <a href="https://www.linkedin.com/in/prajwal-poojary-67ba4a2a3/"> <i class="fab fa-linkedin"></i> linkedin </a>
-                <a href="https://github.com/Prajwal-Poojary"> <i class="fab fa-github"></i> github </a>
-            </div>
-        </div>
-        <div class="credit">created by <span>Prajwal</span> | all rights reserved!</div>
-    </section>
     <script src="js/script.js"></script>
 </body>
 </html>
