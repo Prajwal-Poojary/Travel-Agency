@@ -196,7 +196,7 @@ async def get_weather_data(city: str):
         return {"error": str(e)}
 
 async def get_ai_recommendations(user_preferences: Dict[str, Any], context: str = ""):
-    if not GEMINI_API_KEY:
+    if not GEMINI_API_KEY or not model:
         return {"error": "AI service not configured"}
     
     try:
