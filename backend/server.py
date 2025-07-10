@@ -412,7 +412,7 @@ async def get_travel_recommendations(
 # Chat/AI Assistant Routes
 @app.post("/api/chat")
 async def chat_with_ai(message: ChatMessage):
-    if not GEMINI_API_KEY:
+    if not GEMINI_API_KEY or not model:
         raise HTTPException(status_code=503, detail="AI service not configured")
     
     try:
