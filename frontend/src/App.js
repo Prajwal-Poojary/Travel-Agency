@@ -54,8 +54,8 @@ const pageTransition = {
 };
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false); // Disable loading for debugging
+  const [mounted, setMounted] = useState(true);
   const location = useLocation();
 
   useEffect(() => {
