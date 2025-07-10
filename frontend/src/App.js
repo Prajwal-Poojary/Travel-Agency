@@ -59,11 +59,11 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
-    // Simulate initial loading
+    // Simulate initial loading - reduced for debugging
     const timer = setTimeout(() => {
       setLoading(false);
       setMounted(true);
-    }, 2000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
