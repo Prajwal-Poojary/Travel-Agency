@@ -17,3 +17,4 @@ aiofiles==23.2.1
 websockets==12.0google-ai-generativelanguage
 httplib2
 google-api-python-client
+tqdm
