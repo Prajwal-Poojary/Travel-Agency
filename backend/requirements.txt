@@ -9,13 +9,10 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 requests==2.31.0
 google-generativeai==0.8.5
-Pillow==10.1.0
+Pillow==10.0.1
 motor==3.3.2
 email-validator==2.1.0
 httpx==0.25.2
 aiofiles==23.2.1
 websockets==12.0
-google-ai-generativelanguage
-httplib2
-google-api-python-client
-tqdm
+tqdm==4.66.1
