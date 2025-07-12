@@ -60,34 +60,88 @@ api.interceptors.response.use(
 // API service methods
 export const apiService = {
   // Auth
-  login: (credentials) => api.post('/api/auth/login', credentials),
-  register: (userData) => api.post('/api/auth/register', userData),
-  getProfile: () => api.get('/api/auth/profile'),
-  updateProfile: (profileData) => api.put('/api/auth/profile', profileData),
+  login: async (credentials) => {
+    const response = await api.post('/api/auth/login', credentials);
+    return response.data;
+  },
+  register: async (userData) => {
+    const response = await api.post('/api/auth/register', userData);
+    return response.data;
+  },
+  getProfile: async () => {
+    const response = await api.get('/api/auth/profile');
+    return response.data;
+  },
+  updateProfile: async (profileData) => {
+    const response = await api.put('/api/auth/profile', profileData);
+    return response.data;
+  },
 
   // Destinations
-  getDestinations: (params) => api.get('/api/destinations', { params }),
-  getDestination: (id) => api.get(`/api/destinations/${id}`),
-  createDestination: (destinationData) => api.post('/api/destinations', destinationData),
+  getDestinations: async (params) => {
+    const response = await api.get('/api/destinations', { params });
+    return response.data;
+  },
+  getDestination: async (id) => {
+    const response = await api.get(`/api/destinations/${id}`);
+    return response.data;
+  },
+  createDestination: async (destinationData) => {
+    const response = await api.post('/api/destinations', destinationData);
+    return response.data;
+  },
 
   // Bookings
-  createBooking: (bookingData) => api.post('/api/bookings', bookingData),
-  getUserBookings: () => api.get('/api/bookings'),
-  updateBooking: (id, bookingData) => api.put(`/api/bookings/${id}`, bookingData),
-  cancelBooking: (id) => api.delete(`/api/bookings/${id}`),
+  createBooking: async (bookingData) => {
+    const response = await api.post('/api/bookings', bookingData);
+    return response.data;
+  },
+  getUserBookings: async () => {
+    const response = await api.get('/api/bookings');
+    return response.data;
+  },
+  updateBooking: async (id, bookingData) => {
+    const response = await api.put(`/api/bookings/${id}`, bookingData);
+    return response.data;
+  },
+  cancelBooking: async (id) => {
+    const response = await api.delete(`/api/bookings/${id}`);
+    return response.data;
+  },
 
   // Reviews
-  createReview: (reviewData) => api.post('/api/reviews', reviewData),
-  getDestinationReviews: (destinationId) => api.get(`/api/reviews/${destinationId}`),
-  updateReview: (id, reviewData) => api.put(`/api/reviews/${id}`, reviewData),
-  deleteReview: (id) => api.delete(`/api/reviews/${id}`),
+  createReview: async (reviewData) => {
+    const response = await api.post('/api/reviews', reviewData);
+    return response.data;
+  },
+  getDestinationReviews: async (destinationId) => {
+    const response = await api.get(`/api/reviews/${destinationId}`);
+    return response.data;
+  },
+  updateReview: async (id, reviewData) => {
+    const response = await api.put(`/api/reviews/${id}`, reviewData);
+    return response.data;
+  },
+  deleteReview: async (id) => {
+    const response = await api.delete(`/api/reviews/${id}`);
+    return response.data;
+  },
 
   // AI Services
-  getAIRecommendations: (preferences) => api.post('/api/ai/recommendations', preferences),
-  chatWithAI: (message) => api.post('/api/chat', message),
+  getAIRecommendations: async (preferences) => {
+    const response = await api.post('/api/ai/recommendations', preferences);
+    return response.data;
+  },
+  chatWithAI: async (message) => {
+    const response = await api.post('/api/chat', message);
+    return response.data;
+  },
 
   // Health check
-  healthCheck: () => api.get('/api/health'),
+  healthCheck: async () => {
+    const response = await api.get('/api/health');
+    return response.data;
+  },
 };
 
 export default api;
