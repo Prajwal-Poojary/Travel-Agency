@@ -515,13 +515,14 @@ async def get_user_bookings(current_user: dict = Depends(get_current_user)):
     
     return bookings
 
-# Reviews Routes
+# Enhanced Reviews Routes
 @app.post("/api/reviews")
 async def create_review(review: ReviewCreate, current_user: dict = Depends(get_current_user)):
     review_data = review.dict()
     review_data["review_id"] = str(uuid.uuid4())
     review_data["user_id"] = current_user["user_id"]
     review_data["username"] = current_user["username"]
+    review_data["helpful_count"] = 0
     review_data["created_at"] = datetime.utcnow()
     
     result = await reviews_collection.insert_one(review_data)
@@ -530,13 +531,54 @@ async def create_review(review: ReviewCreate, current_user: dict = Depends(get_c
     return review_data
 
 @app.get("/api/reviews/{destination_id}")
-async def get_destination_reviews(destination_id: str):
-    reviews = await reviews_collection.find({"destination_id": destination_id}).to_list(length=100)
+async def get_destination_reviews(destination_id: str, limit: Optional[int] = 50):
+    reviews = await reviews_collection.find({"destination_id": destination_id}).limit(limit).to_list(length=limit)
     
     for review in reviews:
         review["_id"] = str(review["_id"])
     
     return reviews
+
+@app.post("/api/reviews/{review_id}/helpful")
+async def mark_review_helpful(review_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a review as helpful"""
+    result = await reviews_collection.update_one(
+        {"review_id": review_id},
+        {"$inc": {"helpful_count": 1}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    return {"message": "Review marked as helpful"}
+
+@app.get("/api/reviews/{destination_id}/stats")
+async def get_review_stats(destination_id: str):
+    """Get review statistics for a destination"""
+    pipeline = [
+        {"$match": {"destination_id": destination_id}},
+        {"$group": {
+            "_id": "$rating",
+            "count": {"$sum": 1}
+        }}
+    ]
+    
+    rating_stats = await reviews_collection.aggregate(pipeline).to_list(length=None)
+    
+    # Calculate overall stats
+    total_reviews = await reviews_collection.count_documents({"destination_id": destination_id})
+    avg_rating_pipeline = [
+        {"$match": {"destination_id": destination_id}},
+        {"$group": {"_id": None, "avg_rating": {"$avg": "$rating"}}}
+    ]
+    avg_rating_result = await reviews_collection.aggregate(avg_rating_pipeline).to_list(length=None)
+    avg_rating = avg_rating_result[0]["avg_rating"] if avg_rating_result else 0
+    
+    return {
+        "total_reviews": total_reviews,
+        "average_rating": round(avg_rating, 1),
+        "rating_distribution": rating_stats
+    }
 
 # AI Recommendations Route
 @app.post("/api/ai/recommendations")
