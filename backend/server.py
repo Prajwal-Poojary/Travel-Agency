@@ -590,6 +590,102 @@ async def get_travel_recommendations(
     recommendations = await get_ai_recommendations(preferences, context)
     return recommendations
 
+# Analytics and Statistics Routes
+@app.get("/api/stats/popular-destinations")
+async def get_popular_destinations(limit: Optional[int] = 10):
+    """Get most popular destinations based on reviews and ratings"""
+    pipeline = [
+        {"$lookup": {
+            "from": "reviews",
+            "localField": "destination_id",
+            "foreignField": "destination_id",
+            "as": "reviews"
+        }},
+        {"$addFields": {
+            "review_count": {"$size": "$reviews"},
+            "popularity_score": {"$multiply": ["$rating", {"$size": "$reviews"}]}
+        }},
+        {"$sort": {"popularity_score": -1}},
+        {"$limit": limit},
+        {"$project": {
+            "name": 1,
+            "country": 1,
+            "city": 1,
+            "category": 1,
+            "rating": 1,
+            "review_count": 1,
+            "popularity_score": 1,
+            "images": {"$slice": ["$images", 1]}
+        }}
+    ]
+    
+    popular_destinations = await destinations_collection.aggregate(pipeline).to_list(length=limit)
+    
+    for dest in popular_destinations:
+        dest["_id"] = str(dest["_id"])
+    
+    return popular_destinations
+
+@app.get("/api/stats/travel-insights")
+async def get_travel_insights():
+    """Get general travel insights and statistics"""
+    total_destinations = await destinations_collection.count_documents({})
+    total_reviews = await reviews_collection.count_documents({})
+    total_packages = await packages_collection.count_documents({})
+    
+    # Get average rating across all destinations
+    avg_rating_pipeline = [
+        {"$group": {"_id": None, "avg_rating": {"$avg": "$rating"}}}
+    ]
+    avg_rating_result = await destinations_collection.aggregate(avg_rating_pipeline).to_list(length=None)
+    avg_rating = avg_rating_result[0]["avg_rating"] if avg_rating_result else 0
+    
+    # Get most popular category
+    category_pipeline = [
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 1}
+    ]
+    popular_category_result = await destinations_collection.aggregate(category_pipeline).to_list(length=None)
+    popular_category = popular_category_result[0]["_id"] if popular_category_result else "Unknown"
+    
+    return {
+        "total_destinations": total_destinations,
+        "total_reviews": total_reviews,
+        "total_packages": total_packages,
+        "average_rating": round(avg_rating, 1),
+        "most_popular_category": popular_category
+    }
+
+@app.get("/api/search/suggestions")
+async def get_search_suggestions(q: str):
+    """Get search suggestions for destinations"""
+    if len(q) < 2:
+        return []
+    
+    suggestions = await destinations_collection.find(
+        {
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"city": {"$regex": q, "$options": "i"}},
+                {"country": {"$regex": q, "$options": "i"}},
+                {"category": {"$regex": q, "$options": "i"}}
+            ]
+        },
+        {"name": 1, "city": 1, "country": 1, "category": 1}
+    ).limit(8).to_list(length=8)
+    
+    formatted_suggestions = []
+    for suggestion in suggestions:
+        formatted_suggestions.append({
+            "name": suggestion["name"],
+            "location": f"{suggestion['city']}, {suggestion['country']}",
+            "category": suggestion["category"],
+            "destination_id": suggestion.get("destination_id")
+        })
+    
+    return formatted_suggestions
+
 # Chat/AI Assistant Routes
 @app.post("/api/chat")
 async def chat_with_ai(message: ChatMessage):
