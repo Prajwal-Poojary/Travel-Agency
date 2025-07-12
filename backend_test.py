@@ -22,10 +22,10 @@ class BackendTester:
         self.test_results = []
         self.auth_token = None
         self.test_user_data = {
-            "username": "traveler_alex_2025",
-            "email": "alex.traveler@example.com",
-            "password": "SecurePass123!",
-            "full_name": "Alex Traveler"
+            "username": "testuser123",
+            "email": "test123@example.com",
+            "password": "password123",
+            "full_name": "Test User 123"
         }
         
     async def setup_session(self):
