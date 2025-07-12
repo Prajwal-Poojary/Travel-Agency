@@ -137,6 +137,8 @@ class ReviewCreate(BaseModel):
     rating: int
     comment: str
     images: Optional[List[str]] = []
+    categories: Optional[Dict[str, int]] = {}
+    verified_stay: bool = False
 
 class ChatMessage(BaseModel):
     message: str
