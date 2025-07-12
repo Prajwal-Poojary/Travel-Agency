@@ -421,6 +421,69 @@ async def create_destination(destination: DestinationCreate):
     
     return destination_data
 
+# Travel Packages Routes
+@app.get("/api/packages")
+async def get_travel_packages(featured_only: Optional[bool] = False):
+    """Get travel packages"""
+    query = {}
+    if featured_only:
+        query["featured"] = True
+    
+    packages = await packages_collection.find(query).to_list(length=50)
+    
+    for package in packages:
+        package["_id"] = str(package["_id"])
+    
+    return packages
+
+@app.get("/api/packages/{package_id}")
+async def get_travel_package(package_id: str):
+    """Get specific travel package details"""
+    package = await packages_collection.find_one({"package_id": package_id})
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    
+    package["_id"] = str(package["_id"])
+    
+    # Get destination details for the package
+    destination_details = []
+    for dest_name in package["destinations"]:
+        dest = await destinations_collection.find_one({"name": dest_name})
+        if dest:
+            dest["_id"] = str(dest["_id"])
+            destination_details.append(dest)
+    
+    package["destination_details"] = destination_details
+    
+    return package
+
+@app.post("/api/packages/{package_id}/book")
+async def book_travel_package(
+    package_id: str, 
+    booking_details: Dict[str, Any],
+    current_user: dict = Depends(get_current_user)
+):
+    """Book a travel package"""
+    package = await packages_collection.find_one({"package_id": package_id})
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    
+    booking_data = {
+        "booking_id": str(uuid.uuid4()),
+        "user_id": current_user["user_id"],
+        "package_id": package_id,
+        "package_name": package["name"],
+        "total_price": package["price"],
+        "booking_details": booking_details,
+        "status": "pending",
+        "created_at": datetime.utcnow()
+    }
+    
+    result = await bookings_collection.insert_one(booking_data)
+    booking_data["_id"] = str(result.inserted_id)
+    
+    return booking_data
+
 # Bookings Routes
 @app.post("/api/bookings")
 async def create_booking(booking: BookingCreate, current_user: dict = Depends(get_current_user)):
