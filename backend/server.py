@@ -324,7 +324,7 @@ async def get_destinations(
 
 @app.get("/api/destinations/{destination_id}")
 async def get_destination(destination_id: str):
-    destination = await destinations_collection.find_one({"_id": destination_id})
+    destination = await destinations_collection.find_one({"destination_id": destination_id})
     if not destination:
         raise HTTPException(status_code=404, detail="Destination not found")
     
