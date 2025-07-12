@@ -308,14 +308,17 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
         "created_at": current_user["created_at"]
     }
 
-# Destinations Routes
+# Enhanced Destinations Routes
 @app.get("/api/destinations")
 async def get_destinations(
     search: Optional[str] = None,
     country: Optional[str] = None,
+    category: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
-    activity: Optional[str] = None
+    activity: Optional[str] = None,
+    featured_only: Optional[bool] = False,
+    limit: Optional[int] = 100
 ):
     query = {}
     
@@ -323,18 +326,71 @@ async def get_destinations(
         query["$or"] = [
             {"name": {"$regex": search, "$options": "i"}},
             {"description": {"$regex": search, "$options": "i"}},
-            {"city": {"$regex": search, "$options": "i"}}
+            {"city": {"$regex": search, "$options": "i"}},
+            {"country": {"$regex": search, "$options": "i"}}
         ]
     
     if country:
         query["country"] = {"$regex": country, "$options": "i"}
     
+    if category:
+        query["category"] = {"$regex": category, "$options": "i"}
+    
     if activity:
         query["activities"] = {"$in": [activity]}
     
-    destinations = await destinations_collection.find(query).to_list(length=100)
+    if featured_only:
+        query["featured"] = True
+    
+    destinations = await destinations_collection.find(query).limit(limit).to_list(length=limit)
     
     # Add weather data for each destination
+    for destination in destinations:
+        destination["_id"] = str(destination["_id"])
+        weather_data = await get_weather_data(destination["city"])
+        destination["weather"] = weather_data
+    
+    return destinations
+
+@app.get("/api/destinations/featured")
+async def get_featured_destinations():
+    """Get only featured destinations for homepage"""
+    destinations = await destinations_collection.find({"featured": True}).limit(6).to_list(length=6)
+    
+    for destination in destinations:
+        destination["_id"] = str(destination["_id"])
+        weather_data = await get_weather_data(destination["city"])
+        destination["weather"] = weather_data
+    
+    return destinations
+
+@app.get("/api/destinations/categories")
+async def get_destination_categories():
+    """Get all available destination categories with counts"""
+    pipeline = [
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    
+    categories = await destinations_collection.aggregate(pipeline).to_list(length=None)
+    
+    # Format response
+    formatted_categories = []
+    for cat in categories:
+        formatted_categories.append({
+            "name": cat["_id"],
+            "count": cat["count"]
+        })
+    
+    return formatted_categories
+
+@app.get("/api/destinations/by-category/{category}")
+async def get_destinations_by_category(category: str, limit: Optional[int] = 20):
+    """Get destinations filtered by category"""
+    destinations = await destinations_collection.find(
+        {"category": {"$regex": category, "$options": "i"}}
+    ).limit(limit).to_list(length=limit)
+    
     for destination in destinations:
         destination["_id"] = str(destination["_id"])
         weather_data = await get_weather_data(destination["city"])
