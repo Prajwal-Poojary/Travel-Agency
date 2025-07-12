@@ -93,10 +93,26 @@ class UserProfile(BaseModel):
     preferences: Optional[Dict[str, Any]] = {}
     created_at: datetime
 
+class TravelPackage(BaseModel):
+    name: str
+    description: str
+    destinations: List[str]
+    duration: str
+    price: float
+    original_price: Optional[float] = None
+    savings: Optional[float] = None
+    includes: List[str]
+    image: str
+    featured: bool = False
+    available: bool = True
+    max_group_size: int = 4
+    difficulty: str = "Moderate"
+
 class DestinationCreate(BaseModel):
     name: str
     country: str
     city: str
+    category: str
     description: str
     price_range: str
     activities: List[str]
@@ -105,6 +121,7 @@ class DestinationCreate(BaseModel):
     coordinates: Dict[str, float]
     rating: float = 0.0
     virtual_tour_url: Optional[str] = None
+    featured: bool = False
 
 class BookingCreate(BaseModel):
     destination_id: str
