@@ -57,6 +57,7 @@ destinations_collection = db.destinations
 bookings_collection = db.bookings
 reviews_collection = db.reviews
 chat_sessions_collection = db.chat_sessions
+packages_collection = db.travel_packages
 
 # Google Gemini AI setup
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
