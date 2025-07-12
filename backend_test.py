@@ -387,11 +387,10 @@ class BackendTester:
             return False
 
     async def test_chat_api(self):
-        """Test AI chat endpoint (if available)"""
+        """Test AI chat endpoint (CRITICAL - just fixed)"""
         try:
             chat_data = {
-                "message": "Hello, can you recommend a travel destination?",
-                "session_id": str(uuid.uuid4())
+                "message": "What are the best beach destinations for honeymoon?"
             }
             
             start_time = time.time()
