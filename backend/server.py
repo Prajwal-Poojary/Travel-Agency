@@ -63,7 +63,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 model = None
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
 # Weather API
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
