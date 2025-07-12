@@ -450,6 +450,7 @@ class BackendTester:
             
             # Optional Features
             await self.test_chat_api()
+            await self.test_ai_recommendations()
             
         finally:
             await self.cleanup_session()
