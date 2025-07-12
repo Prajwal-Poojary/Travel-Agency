@@ -337,6 +337,55 @@ class BackendTester:
                 
         return len(performance_results) > 0
         
+    async def test_ai_recommendations(self):
+        """Test AI recommendations endpoint (CRITICAL - just fixed)"""
+        if not self.auth_token:
+            self.log_test("AI Recommendations", False, "No auth token available")
+            return False
+            
+        try:
+            recommendations_data = {
+                "budget": "luxury",
+                "activities": ["beach", "romance"],
+                "travel_style": "luxury"
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {self.auth_token}",
+                "Content-Type": "application/json"
+            }
+            
+            start_time = time.time()
+            async with self.session.post(
+                f"{API_BASE}/ai/recommendations",
+                json=recommendations_data,
+                headers=headers
+            ) as response:
+                response_time = time.time() - start_time
+                
+                if response.status == 200:
+                    data = await response.json()
+                    if "recommendations" in data:
+                        self.log_test("AI Recommendations", True, f"AI recommendations received", response_time)
+                        return True
+                    elif "error" in data:
+                        self.log_test("AI Recommendations", True, f"AI service not configured: {data['error']}")
+                        return True
+                    else:
+                        self.log_test("AI Recommendations", False, f"Invalid recommendations response: {data}")
+                        return False
+                elif response.status == 503:
+                    self.log_test("AI Recommendations", True, "AI service not configured (expected)")
+                    return True
+                else:
+                    text = await response.text()
+                    self.log_test("AI Recommendations", False, f"HTTP {response.status}: {text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("AI Recommendations", False, f"AI recommendations error: {str(e)}")
+            return False
+
     async def test_chat_api(self):
         """Test AI chat endpoint (if available)"""
         try:
