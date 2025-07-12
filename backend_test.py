@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional
 import uuid
 
 # Configuration
-BASE_URL = "https://cfffaf60-809d-4c4e-9677-63584792f647.preview.emergentagent.com"
+BASE_URL = "https://8a050efb-24e7-4633-9205-7f6f7418b5c8.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class BackendTester:
