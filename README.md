@@ -1,3 +1,9 @@
+# Travel Agency Platform
+
+**IMPORTANT: Backend requires Python 3.11 or 3.10 (not 3.13+) for Windows compatibility.**
+
+Many backend dependencies (such as Pillow) do not yet support Python 3.13. Please use Python 3.11 or 3.10 for development and installation on Windows. Download from https://www.python.org/downloads/.
+
 # 🌟 Advanced Travel Platform - Complete Working Version
 
 <div align="center">
