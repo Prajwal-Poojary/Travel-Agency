@@ -90,6 +90,14 @@ export const apiService = {
     const response = await api.post('/api/destinations', destinationData);
     return response.data;
   },
+  getCountries: async () => {
+    const response = await api.get('/api/destinations/countries');
+    return response.data;
+  },
+  getActivities: async () => {
+    const response = await api.get('/api/destinations/activities');
+    return response.data;
+  },
 
   // Bookings
   createBooking: async (bookingData) => {

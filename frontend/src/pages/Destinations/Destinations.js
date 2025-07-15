@@ -72,8 +72,12 @@ const Destinations = () => {
     setSearchTerm('');
   };
 
-  const countries = ['Japan', 'Switzerland', 'Maldives', 'Greece', 'UAE', 'Indonesia', 'Iceland', 'Peru'];
-  const activities = ['Skiing', 'Snorkeling', 'Spa', 'Hiking', 'Cultural Tours', 'Photography', 'Adventure Sports'];
+  const { data: countries = [] } = useQuery('countries', apiService.getCountries, {
+    staleTime: Infinity,
+  });
+  const { data: activities = [] } = useQuery('activities', apiService.getActivities, {
+    staleTime: Infinity,
+  });
 
   if (error) {
     return (

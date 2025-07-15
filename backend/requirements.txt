@@ -16,3 +16,4 @@ httpx
 aiofiles
 websockets
 tqdm
+aiohttp
