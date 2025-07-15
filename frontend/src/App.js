@@ -19,12 +19,12 @@ import ParticleBackground from './components/UI/ParticleBackground';
 const Home = React.lazy(() => import('./pages/Home/Home'));
 const Destinations = React.lazy(() => import('./pages/Destinations/Destinations'));
 const DestinationDetail = React.lazy(() => import('./pages/Destinations/DestinationDetail'));
-const Bookings = React.lazy(() => import('./pages/Bookings/Bookings'));
+const Bookings = React.lazy(() => import('./pages/Bookings/EnhancedBookings'));
 const Profile = React.lazy(() => import('./pages/Profile/Profile'));
 const Login = React.lazy(() => import('./pages/Auth/Login'));
 const Register = React.lazy(() => import('./pages/Auth/Register'));
-const AIAssistant = React.lazy(() => import('./pages/AIAssistant/AIAssistant'));
-const VirtualTours = React.lazy(() => import('./pages/VirtualTours/VirtualTours'));
+const AIAssistant = React.lazy(() => import('./pages/AIAssistant/EnhancedAIAssistant'));
+const VirtualTours = React.lazy(() => import('./pages/VirtualTours/EnhancedVirtualTours'));
 const About = React.lazy(() => import('./pages/About/About'));
 const Contact = React.lazy(() => import('./pages/Contact/Contact'));
 
