@@ -352,6 +352,18 @@ async def get_destinations(
     
     return destinations
 
+@app.get("/api/destinations/countries")
+async def get_countries():
+    """Get all available countries"""
+    countries = await destinations_collection.distinct("country")
+    return countries
+
+@app.get("/api/destinations/activities")
+async def get_activities():
+    """Get all available activities"""
+    activities = await destinations_collection.distinct("activities")
+    return activities
+
 @app.get("/api/destinations/featured")
 async def get_featured_destinations():
     """Get only featured destinations for homepage"""
