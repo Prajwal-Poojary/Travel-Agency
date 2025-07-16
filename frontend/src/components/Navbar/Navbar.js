@@ -181,17 +181,19 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg glass hover:bg-white/10 transition-colors"
-            >
-              {isOpen ? (
-                <X className="w-6 h-6 text-white" />
-              ) : (
-                <Menu className="w-6 h-6 text-white" />
-              )}
-            </button>
+            {/* Mobile Menu Button - Only show for authenticated users */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="md:hidden p-2 rounded-lg glass hover:bg-white/10 transition-colors"
+              >
+                {isOpen ? (
+                  <X className="w-6 h-6 text-white" />
+                ) : (
+                  <Menu className="w-6 h-6 text-white" />
+                )}
+              </button>
+            )}
           </div>
         </div>
 
