@@ -82,7 +82,7 @@ class BackendTester:
             
             return response
         except requests.exceptions.RequestException as e:
-            return None, str(e)
+            return None
 
     def test_health_check(self):
         """Test health check endpoint"""
