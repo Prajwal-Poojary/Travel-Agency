@@ -34,6 +34,9 @@ aiofiles==23.2.1
 # WebSocket support
 websockets==12.0
 
+# CORS
+python-cors==1.0.1
+
 # Development
 pytest==7.4.3
 pytest-asyncio==0.21.1
