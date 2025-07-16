@@ -10,10 +10,13 @@ let genAI = null;
 let model = null;
 
 try {
-  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'AIzaSyAF74HrSMUglFeqj4lDkCkXAJjzHKGg6jo') {
+  if (process.env.GEMINI_API_KEY) {
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    console.log('Google Gemini AI initialized successfully');
+  } else {
+    console.log('GEMINI_API_KEY not found in environment variables');
   }
 } catch (error) {
   console.log('Google Gemini AI initialization failed:', error.message);
