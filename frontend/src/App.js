@@ -20,11 +20,14 @@ const Home = React.lazy(() => import('./pages/Home/Home'));
 const Destinations = React.lazy(() => import('./pages/Destinations/Destinations'));
 const DestinationDetail = React.lazy(() => import('./pages/Destinations/DestinationDetail'));
 const Bookings = React.lazy(() => import('./pages/Bookings/EnhancedBookings'));
+const BookingsBasic = React.lazy(() => import('./pages/Bookings/Bookings'));
 const Profile = React.lazy(() => import('./pages/Profile/Profile'));
 const Login = React.lazy(() => import('./pages/Auth/Login'));
 const Register = React.lazy(() => import('./pages/Auth/Register'));
 const AIAssistant = React.lazy(() => import('./pages/AIAssistant/EnhancedAIAssistant'));
+const AIAssistantBasic = React.lazy(() => import('./pages/AIAssistant/AIAssistant'));
 const VirtualTours = React.lazy(() => import('./pages/VirtualTours/EnhancedVirtualTours'));
+const VirtualToursBasic = React.lazy(() => import('./pages/VirtualTours/VirtualTours'));
 const About = React.lazy(() => import('./pages/About/About'));
 const Contact = React.lazy(() => import('./pages/Contact/Contact'));
 
@@ -111,11 +114,14 @@ function App() {
                       <Route path="/destinations" element={<Destinations />} />
                       <Route path="/destinations/:id" element={<DestinationDetail />} />
                       <Route path="/bookings" element={<Bookings />} />
+                      <Route path="/bookings-basic" element={<BookingsBasic />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/ai-assistant" element={<AIAssistant />} />
+                      <Route path="/ai-assistant-basic" element={<AIAssistantBasic />} />
                       <Route path="/virtual-tours" element={<VirtualTours />} />
+                      <Route path="/virtual-tours-basic" element={<VirtualToursBasic />} />
                       <Route path="/about" element={<About />} />
                       <Route path="/contact" element={<Contact />} />
                     </Routes>

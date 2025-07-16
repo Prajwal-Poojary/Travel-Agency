@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+const isDev = process.env.NODE_ENV !== 'production';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,42 +60,38 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      isScrolled ? 'navbar-glass shadow-xl' : 'bg-transparent'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center"
-            >
-              <MapPin className="w-5 h-5 text-white" />
-            </motion.div>
-            <span className="text-xl font-bold text-gradient">TravelAI</span>
+    <nav className={`navbar fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'navbar-glass shadow-xl' : 'bg-transparent'}`}>
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link to="/" className="text-2xl font-bold text-white tracking-tight mr-4">
+            TravelX
           </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    isActive(item.href)
-                      ? 'bg-primary-500/20 text-primary-400'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{item.name}</span>
-                </Link>
-              );
-            })}
+          <div className="hidden md:flex gap-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`nav-link flex items-center gap-1 px-3 py-2 rounded-lg transition-colors duration-200 ${isActive(item.href) ? 'bg-primary-500 text-white' : 'text-gray-300 hover:bg-white/10'}`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.name}</span>
+              </Link>
+            ))}
+            {isDev && (
+              <div className="relative group">
+                <button className="nav-link flex items-center gap-1 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/10">
+                  Dev Pages
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-56 bg-dark-800 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  <Link to="/bookings-basic" className="block px-4 py-2 text-gray-200 hover:bg-dark-700">Bookings (Basic)</Link>
+                  <Link to="/ai-assistant-basic" className="block px-4 py-2 text-gray-200 hover:bg-dark-700">AI Assistant (Basic)</Link>
+                  <Link to="/virtual-tours-basic" className="block px-4 py-2 text-gray-200 hover:bg-dark-700">Virtual Tours (Basic)</Link>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
