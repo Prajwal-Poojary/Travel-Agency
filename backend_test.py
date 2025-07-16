@@ -109,14 +109,12 @@ class BackendTester:
         """Test root endpoint"""
         print("🔍 Testing Root Endpoint...")
         
-        response = self.make_request("GET", "")
-        if response is None:
-            # Try without /api prefix
-            try:
-                response = self.session.get(BASE_URL, timeout=30)
-            except:
-                self.log_result("Root Endpoint", False, "Request failed", "Connection error")
-                return
+        # Test the actual root endpoint without /api prefix
+        try:
+            response = self.session.get(BASE_URL, timeout=30)
+        except:
+            self.log_result("Root Endpoint", False, "Request failed", "Connection error")
+            return
         
         if response.status_code == 200:
             try:
