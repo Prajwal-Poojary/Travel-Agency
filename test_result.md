@@ -136,7 +136,7 @@
 
 **Testing Agent**: Frontend Testing SDET  
 **Test Date**: July 16, 2025  
-**Test URL**: https://95d61f91-11eb-4b4f-bb0a-ce3de1dc6a56.preview.emergentagent.com/destinations
+**Test URL**: https://67542151-a4de-43a5-95d5-9a44b97d2cf8.preview.emergentagent.com/destinations
 
 ### 🎯 CORE FUNCTIONALITY TESTS:
 
