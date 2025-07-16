@@ -293,7 +293,7 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {destinations?.data?.slice(0, 6)?.map((destination, index) => (
+              {destinations?.slice(0, 6)?.map((destination, index) => (
                 <motion.div
                   key={destination.destination_id}
                   initial={{ opacity: 0, y: 20 }}
