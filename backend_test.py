@@ -478,19 +478,27 @@ class BackendTester:
         else:
             self.log_result("Get Packages", False, "Request failed", "Connection error")
 
-        # Test stats endpoint
-        response = self.make_request("GET", "/stats")
-        if response:
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    self.log_result("Get Stats", True, f"Retrieved stats data")
-                except json.JSONDecodeError:
-                    self.log_result("Get Stats", False, "Invalid JSON response", response.text)
+        # Test stats endpoints
+        stats_endpoints = [
+            "/stats/travel-insights",
+            "/stats/popular-destinations",
+            "/stats/destinations-by-country"
+        ]
+        
+        for endpoint in stats_endpoints:
+            response = self.make_request("GET", endpoint)
+            endpoint_name = endpoint.split('/')[-1].replace('-', ' ').title()
+            if response:
+                if response.status_code == 200:
+                    try:
+                        data = response.json()
+                        self.log_result(f"Get {endpoint_name}", True, f"Retrieved {endpoint_name.lower()} data")
+                    except json.JSONDecodeError:
+                        self.log_result(f"Get {endpoint_name}", False, "Invalid JSON response", response.text)
+                else:
+                    self.log_result(f"Get {endpoint_name}", False, f"HTTP {response.status_code}", response.text)
             else:
-                self.log_result("Get Stats", False, f"HTTP {response.status_code}", response.text)
-        else:
-            self.log_result("Get Stats", False, "Request failed", "Connection error")
+                self.log_result(f"Get {endpoint_name}", False, "Request failed", "Connection error")
 
         # Test WebSocket info endpoint
         response = self.make_request("GET", "/ws")
