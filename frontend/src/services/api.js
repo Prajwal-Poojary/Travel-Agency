@@ -98,6 +98,10 @@ export const apiService = {
     const response = await api.get('/api/destinations/activities');
     return response.data;
   },
+  getFeaturedDestinations: async () => {
+    const response = await api.get('/api/destinations/featured');
+    return response.data;
+  },
 
   // Bookings
   createBooking: async (bookingData) => {
@@ -143,6 +147,17 @@ export const apiService = {
   chatWithAI: async (message) => {
     const response = await api.post('/api/chat', message);
     return response.data;
+  },
+
+  // Virtual Tours (Mock data for now)
+  getVirtualTours: async (params) => {
+    // For now, return destinations as virtual tours
+    const response = await api.get('/api/destinations', { params });
+    return response.data;
+  },
+  getFeaturedVirtualTours: async (limit = 6) => {
+    const response = await api.get(`/api/destinations/featured`);
+    return response.data.slice(0, limit);
   },
 
   // Health check
