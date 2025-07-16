@@ -195,9 +195,9 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Only show for authenticated users */}
         <AnimatePresence>
-          {isOpen && (
+          {isOpen && isAuthenticated && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
