@@ -109,7 +109,7 @@ class BackendTester:
         """Test root endpoint"""
         print("🔍 Testing Root Endpoint...")
         
-        # Test the actual root endpoint without /api prefix
+        # Test the actual root endpoint without /api prefix - should serve frontend
         try:
             response = self.session.get(BASE_URL, timeout=30)
         except:
@@ -117,14 +117,11 @@ class BackendTester:
             return
         
         if response.status_code == 200:
-            try:
-                data = response.json()
-                if "message" in data and "Advanced Travel Platform" in data["message"]:
-                    self.log_result("Root Endpoint", True, f"Message: {data['message']}")
-                else:
-                    self.log_result("Root Endpoint", False, "Invalid response format", str(data))
-            except json.JSONDecodeError:
-                self.log_result("Root Endpoint", False, "Invalid JSON response", response.text)
+            # Root should serve HTML for frontend
+            if "<!DOCTYPE html>" in response.text and "Advanced Travel Platform" in response.text:
+                self.log_result("Root Endpoint", True, "Frontend HTML served correctly")
+            else:
+                self.log_result("Root Endpoint", False, "Invalid HTML response", response.text[:200])
         else:
             self.log_result("Root Endpoint", False, f"HTTP {response.status_code}", response.text)
 
