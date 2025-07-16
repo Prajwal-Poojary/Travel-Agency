@@ -112,7 +112,7 @@ app.use('/api/stats', statsRoutes);
 app.get('/api/ws', (req, res) => {
   res.json({ 
     message: 'WebSocket endpoint - use Socket.IO client to connect',
-    endpoint: 'ws://localhost:8001'
+    endpoint: 'wss://e5e4dc74-22c1-415e-87d2-c8716c0a07e0.preview.emergentagent.com'
   });
 });
 
