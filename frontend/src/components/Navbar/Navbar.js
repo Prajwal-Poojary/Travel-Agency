@@ -75,26 +75,28 @@ const Navbar = () => {
             <span className="text-xl font-bold text-gradient">TravelAI</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    isActive(item.href)
-                      ? 'bg-primary-500/20 text-primary-400'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{item.name}</span>
-                </Link>
-              );
-            })}
-          </div>
+          {/* Desktop Navigation - Only show for authenticated users */}
+          {isAuthenticated && (
+            <div className="hidden md:flex items-center space-x-8">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+                      isActive(item.href)
+                        ? 'bg-primary-500/20 text-primary-400'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
