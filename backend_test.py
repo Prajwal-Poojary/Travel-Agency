@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import sys
 
 # Configuration
-BASE_URL = "https://3253c88c-f608-4872-b869-646ed2dc7ac8.preview.emergentagent.com"
+BASE_URL = "https://ad3565cd-d697-4bb2-a351-807a5cf6f28a.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 # Test data
