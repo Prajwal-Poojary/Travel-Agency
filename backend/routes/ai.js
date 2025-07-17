@@ -80,12 +80,44 @@ const generateAIResponse = async (message, chatHistory = []) => {
     
     const fullPrompt = `${context}${conversationContext}\n\nUser: ${message}\n\nAssistant:`;
     
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
+    // Retry logic for handling temporary overload errors
+    const maxRetries = 3;
+    let retryCount = 0;
     
-    return response.text();
+    while (retryCount < maxRetries) {
+      try {
+        const result = await model.generateContent(fullPrompt);
+        const response = await result.response;
+        return response.text();
+      } catch (error) {
+        retryCount++;
+        
+        // Check if it's a temporary overload error
+        if (error.message.includes('overloaded') || error.message.includes('503')) {
+          console.log(`AI service overloaded, retry ${retryCount}/${maxRetries}`);
+          if (retryCount < maxRetries) {
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            continue;
+          }
+        }
+        
+        // Re-throw the error if it's not a temporary overload or max retries reached
+        throw error;
+      }
+    }
+    
+    // If we reach here, all retries failed
+    return 'I apologize, but I\'m currently experiencing high traffic. Please try again in a few moments.';
+    
   } catch (error) {
     console.error('AI chat error:', error);
+    
+    // Check if it's a temporary overload error
+    if (error.message.includes('overloaded') || error.message.includes('503')) {
+      return 'I apologize, but I\'m currently experiencing high traffic. Please try again in a few moments.';
+    }
+    
     return 'I apologize, but I\'m experiencing technical difficulties right now. Please try again in a few moments, or contact our support team if the issue persists.';
   }
 };
