@@ -48,14 +48,50 @@ const getAIRecommendations = async (userPreferences, context = '') => {
     Format your response as a structured, helpful travel guide.
     `;
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
+    // Retry logic for handling temporary overload errors
+    const maxRetries = 3;
+    let retryCount = 0;
     
-    return {
-      recommendations: response.text()
+    while (retryCount < maxRetries) {
+      try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return { recommendations: response.text() };
+      } catch (error) {
+        retryCount++;
+        
+        // Check if it's a temporary overload error
+        if (error.message.includes('overloaded') || error.message.includes('503')) {
+          console.log(`AI recommendation service overloaded, retry ${retryCount}/${maxRetries}`);
+          if (retryCount < maxRetries) {
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            continue;
+          }
+        }
+        
+        // Re-throw the error if it's not a temporary overload or max retries reached
+        throw error;
+      }
+    }
+    
+    // If we reach here, all retries failed
+    return { 
+      error: 'AI service temporarily overloaded',
+      recommendations: 'Our AI travel assistant is currently experiencing high traffic. Please try again in a few moments.'
     };
+    
   } catch (error) {
     console.error('AI recommendation error:', error);
+    
+    // Check if it's a temporary overload error
+    if (error.message.includes('overloaded') || error.message.includes('503')) {
+      return { 
+        error: 'AI service temporarily overloaded',
+        recommendations: 'Our AI travel assistant is currently experiencing high traffic. Please try again in a few moments.'
+      };
+    }
+    
     return { 
       error: 'AI service temporarily unavailable',
       recommendations: 'We apologize, but our AI travel assistant is currently experiencing technical difficulties. Please try again later.'
