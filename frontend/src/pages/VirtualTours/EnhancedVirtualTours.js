@@ -401,7 +401,7 @@ const EnhancedVirtualTours = () => {
                     <div className="flex flex-wrap gap-2 mb-4">
                       {tour.features?.slice(0, 3).map((feature, index) => (
                         <span
-                          key={index}
+                          key={`feature-${tour.id || tour.name}-${index}`}
                           className="px-2 py-1 bg-primary-500/20 text-primary-300 rounded-full text-xs"
                         >
                           {feature}
