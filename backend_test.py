@@ -455,6 +455,107 @@ class BackendTester:
             else:
                 self.log_result("AI Recommendations", False, f"HTTP {response.status_code if response else 'No response'}", response.text if response else "Connection error")
 
+    def test_virtual_tours(self):
+        """Test virtual tours endpoints"""
+        print("🔍 Testing Virtual Tours Endpoints...")
+        
+        # Test GET all virtual tours
+        response = self.make_request("GET", "/virtual-tours")
+        if response is None:
+            self.log_result("Get All Virtual Tours", False, "Request failed", "Connection error")
+            return
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_result("Get All Virtual Tours", True, f"Retrieved {len(data)} virtual tours")
+                    # Store first tour ID for further testing
+                    if len(data) > 0 and 'tour_id' in data[0]:
+                        self.test_tour_id = data[0]['tour_id']
+                else:
+                    self.log_result("Get All Virtual Tours", False, "Invalid response format", str(data))
+            except json.JSONDecodeError:
+                self.log_result("Get All Virtual Tours", False, "Invalid JSON response", response.text)
+        else:
+            self.log_result("Get All Virtual Tours", False, f"HTTP {response.status_code}", response.text)
+
+        # Test GET featured virtual tours
+        response = self.make_request("GET", "/virtual-tours/featured")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_result("Get Featured Virtual Tours", True, f"Retrieved {len(data)} featured tours")
+                else:
+                    self.log_result("Get Featured Virtual Tours", False, "Invalid response format", str(data))
+            except json.JSONDecodeError:
+                self.log_result("Get Featured Virtual Tours", False, "Invalid JSON response", response.text)
+        else:
+            self.log_result("Get Featured Virtual Tours", False, f"HTTP {response.status_code if response else 'No response'}", response.text if response else "Connection error")
+
+        # Test GET virtual tour types
+        response = self.make_request("GET", "/virtual-tours/types")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_result("Get Virtual Tour Types", True, f"Retrieved {len(data)} tour types")
+                else:
+                    self.log_result("Get Virtual Tour Types", False, "Invalid response format", str(data))
+            except json.JSONDecodeError:
+                self.log_result("Get Virtual Tour Types", False, "Invalid JSON response", response.text)
+        else:
+            self.log_result("Get Virtual Tour Types", False, f"HTTP {response.status_code if response else 'No response'}", response.text if response else "Connection error")
+
+        # Test GET virtual tour countries
+        response = self.make_request("GET", "/virtual-tours/countries")
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_result("Get Virtual Tour Countries", True, f"Retrieved {len(data)} countries")
+                else:
+                    self.log_result("Get Virtual Tour Countries", False, "Invalid response format", str(data))
+            except json.JSONDecodeError:
+                self.log_result("Get Virtual Tour Countries", False, "Invalid JSON response", response.text)
+        else:
+            self.log_result("Get Virtual Tour Countries", False, f"HTTP {response.status_code if response else 'No response'}", response.text if response else "Connection error")
+
+        # Test GET single virtual tour
+        if hasattr(self, 'test_tour_id') and self.test_tour_id:
+            response = self.make_request("GET", f"/virtual-tours/{self.test_tour_id}")
+            if response and response.status_code == 200:
+                try:
+                    data = response.json()
+                    if "tour_id" in data and "name" in data:
+                        self.log_result("Get Single Virtual Tour", True, f"Retrieved tour: {data['name']}")
+                    else:
+                        self.log_result("Get Single Virtual Tour", False, "Invalid tour data", str(data))
+                except json.JSONDecodeError:
+                    self.log_result("Get Single Virtual Tour", False, "Invalid JSON response", response.text)
+            else:
+                self.log_result("Get Single Virtual Tour", False, f"HTTP {response.status_code if response else 'No response'}", response.text if response else "Connection error")
+
+        # Test virtual tour search with filters
+        search_params = {
+            'search': 'beach',
+            'tour_type': '360_video',
+            'limit': 5
+        }
+        response = self.make_request("GET", "/virtual-tours", data=search_params)
+        if response and response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_result("Virtual Tours Search", True, f"Search returned {len(data)} results")
+                else:
+                    self.log_result("Virtual Tours Search", False, "Invalid search response", str(data))
+            except json.JSONDecodeError:
+                self.log_result("Virtual Tours Search", False, "Invalid JSON response", response.text)
+        else:
+            self.log_result("Virtual Tours Search", False, f"HTTP {response.status_code if response else 'No response'}", response.text if response else "Connection error")
+
     def test_additional_endpoints(self):
         """Test additional endpoints like packages and stats"""
         print("🔍 Testing Additional Endpoints...")
