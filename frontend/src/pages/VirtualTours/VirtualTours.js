@@ -322,7 +322,7 @@ const VirtualTours = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-primary-400" />
-                      <span className="text-gray-300 text-sm">{selectedTour.best_time_to_visit}</span>
+                      <span className="text-gray-300 text-sm">{selectedTour.duration}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -332,12 +332,12 @@ const VirtualTours = () => {
                 </div>
                 
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">What you can do</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">What you can experience</h3>
                   <div className="space-y-2">
-                    {selectedTour.activities.map((activity, index) => (
+                    {selectedTour.features && selectedTour.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-primary-400 rounded-full"></div>
-                        <span className="text-gray-300 text-sm">{activity}</span>
+                        <span className="text-gray-300 text-sm">{feature}</span>
                       </div>
                     ))}
                   </div>
