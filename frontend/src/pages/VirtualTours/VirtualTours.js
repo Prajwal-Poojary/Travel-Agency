@@ -287,17 +287,28 @@ const VirtualTours = () => {
               </div>
 
               <div className="aspect-video bg-gray-800 rounded-xl mb-6 flex items-center justify-center">
-                <div className="text-center">
-                  <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl text-white mb-2">360° Virtual Tour</h3>
-                  <p className="text-gray-300 mb-4">
-                    Experience {selectedTour.name} in immersive 360° view
-                  </p>
-                  <button className="px-8 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2 mx-auto">
-                    <Play className="w-5 h-5" />
-                    Start Virtual Tour
-                  </button>
-                </div>
+                {selectedTour.video_url ? (
+                  <iframe
+                    src={selectedTour.video_url}
+                    title={selectedTour.name}
+                    className="w-full h-full rounded-xl"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="text-center">
+                    <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl text-white mb-2">360° Virtual Tour</h3>
+                    <p className="text-gray-300 mb-4">
+                      Experience {selectedTour.name} in immersive 360° view
+                    </p>
+                    <button className="px-8 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2 mx-auto">
+                      <Play className="w-5 h-5" />
+                      Start Virtual Tour
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
