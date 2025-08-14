@@ -31,6 +31,7 @@ class BackendTester:
         self.test_destination_id = None
         self.test_booking_id = None
         self.test_review_id = None
+        self.test_tour_id = None
         self.chat_session_id = None
         self.results = {
             "passed": 0,
