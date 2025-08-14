@@ -26,6 +26,7 @@ const reviewsRoutes = require('./routes/reviews');
 const aiRoutes = require('./routes/ai');
 const packagesRoutes = require('./routes/packages');
 const statsRoutes = require('./routes/stats');
+const virtualToursRoutes = require('./routes/virtual-tours');
 
 // Security middleware
 app.use(helmet());
