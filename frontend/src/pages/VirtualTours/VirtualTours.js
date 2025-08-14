@@ -184,23 +184,23 @@ const VirtualTours = () => {
           animate="visible"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {destinations.map((destination) => (
+          {destinations.map((tour) => (
             <motion.div
-              key={destination.destination_id}
+              key={tour.tour_id}
               variants={itemVariants}
               whileHover={{ y: -5, scale: 1.02 }}
               className="glass rounded-xl overflow-hidden cursor-pointer group"
-              onClick={() => handleTourClick(destination)}
+              onClick={() => handleTourClick(tour)}
             >
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={destination.images[0]}
-                  alt={destination.name}
+                  src={tour.thumbnail}
+                  alt={tour.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
-                  <span className="text-white text-sm font-medium">{destination.country}</span>
+                  <span className="text-white text-sm font-medium">{tour.country}</span>
                 </div>
                 <div className="absolute top-4 right-4 w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
                   <Play className="w-5 h-5 text-white ml-1" />
@@ -209,29 +209,29 @@ const VirtualTours = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-white text-sm font-medium">{destination.rating}</span>
+                      <span className="text-white text-sm font-medium">{tour.rating}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4 text-gray-300" />
-                      <span className="text-white text-sm">{destination.city}</span>
+                      <Clock className="w-4 h-4 text-gray-300" />
+                      <span className="text-white text-sm">{tour.duration}</span>
                     </div>
                   </div>
                 </div>
               </div>
               
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2">{destination.name}</h3>
+                <h3 className="text-xl font-bold text-white mb-2">{tour.name}</h3>
                 <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                  {destination.description}
+                  {tour.description}
                 </p>
                 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {destination.activities.slice(0, 3).map((activity, index) => (
+                  {tour.features && tour.features.slice(0, 3).map((feature, index) => (
                     <span
                       key={index}
                       className="px-2 py-1 bg-primary-500/20 text-primary-300 rounded-full text-xs"
                     >
-                      {activity}
+                      {feature}
                     </span>
                   ))}
                 </div>
