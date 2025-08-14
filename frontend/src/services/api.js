@@ -149,15 +149,26 @@ export const apiService = {
     return response.data;
   },
 
-  // Virtual Tours (Mock data for now)
+  // Virtual Tours
   getVirtualTours: async (params) => {
-    // For now, return destinations as virtual tours
-    const response = await api.get('/api/destinations', { params });
+    const response = await api.get('/api/virtual-tours', { params });
     return response.data;
   },
   getFeaturedVirtualTours: async (limit = 6) => {
-    const response = await api.get(`/api/destinations/featured`);
-    return response.data.slice(0, limit);
+    const response = await api.get(`/api/virtual-tours/featured?limit=${limit}`);
+    return response.data;
+  },
+  getVirtualTour: async (id) => {
+    const response = await api.get(`/api/virtual-tours/${id}`);
+    return response.data;
+  },
+  getVirtualTourTypes: async () => {
+    const response = await api.get('/api/virtual-tours/types');
+    return response.data;
+  },
+  getVirtualTourCountries: async () => {
+    const response = await api.get('/api/virtual-tours/countries');
+    return response.data;
   },
 
   // Health check
