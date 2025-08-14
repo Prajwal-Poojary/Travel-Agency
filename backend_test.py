@@ -632,6 +632,7 @@ class BackendTester:
         self.test_bookings()
         self.test_reviews()
         self.test_ai_chat()
+        self.test_virtual_tours()
         self.test_additional_endpoints()
 
         # Print summary
