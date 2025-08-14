@@ -16,9 +16,9 @@ const VirtualTours = () => {
 
   const fetchDestinations = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/destinations/featured`);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/virtual-tours/featured`);
       if (!response.ok) {
-        throw new Error('Failed to fetch destinations');
+        throw new Error('Failed to fetch virtual tours');
       }
       const data = await response.json();
       setDestinations(data);
