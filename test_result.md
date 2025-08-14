@@ -136,7 +136,7 @@
 
 **Testing Agent**: Frontend Testing SDET  
 **Test Date**: July 16, 2025  
-**Test URL**: https://fb555b14-0ac1-4779-9fb0-2ef418926d63.preview.emergentagent.com/destinations
+**Test URL**: https://destination-viewer.preview.emergentagent.com/destinations
 
 ### 🎯 CORE FUNCTIONALITY TESTS:
 
@@ -234,7 +234,7 @@
 
 **Testing Agent**: Frontend Testing SDET  
 **Test Date**: July 17, 2025  
-**Test URL**: https://fb555b14-0ac1-4779-9fb0-2ef418926d63.preview.emergentagent.com/ai-assistant  
+**Test URL**: https://destination-viewer.preview.emergentagent.com/ai-assistant  
 **Test Status**: ✅ **ALL AI CHATBOT FUNCTIONALITY WORKING PERFECTLY**
 
 ### 🎯 COMPREHENSIVE TEST RESULTS:
@@ -395,7 +395,7 @@
 
 **Testing Agent**: Backend Testing SDET  
 **Test Date**: July 16, 2025  
-**Test URL**: https://fb555b14-0ac1-4779-9fb0-2ef418926d63.preview.emergentagent.com/api
+**Test URL**: https://destination-viewer.preview.emergentagent.com/api
 **Test Status**: ✅ **ALL 23 ENDPOINTS WORKING PERFECTLY**
 
 ### 🔧 CRITICAL ISSUE RESOLVED:
@@ -497,7 +497,7 @@ The Node.js Express backend is working perfectly with:
 
 **Testing Agent**: Frontend Testing SDET  
 **Test Date**: July 16, 2025  
-**Test URL**: https://fb555b14-0ac1-4779-9fb0-2ef418926d63.preview.emergentagent.com  
+**Test URL**: https://destination-viewer.preview.emergentagent.com  
 **Test Status**: ✅ **ALL MAJOR FUNCTIONALITY WORKING**
 
 ### 🎯 COMPREHENSIVE TESTING RESULTS:
