@@ -108,6 +108,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/chat', aiRoutes);
 app.use('/api/packages', packagesRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/virtual-tours', virtualToursRoutes);
 
 // WebSocket endpoint simulation
 app.get('/api/ws', (req, res) => {
