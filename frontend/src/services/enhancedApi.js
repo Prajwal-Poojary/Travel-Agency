@@ -109,7 +109,7 @@ export const enhancedApiService = {
     return response.data;
   },
 
-  // Virtual Tours
+  // Enhanced Virtual Tours
   getVirtualTours: async (params) => {
     const response = await api.get('/api/virtual-tours', { params });
     return response.data;
@@ -124,6 +124,14 @@ export const enhancedApiService = {
   },
   getVirtualTourAnalytics: async (id) => {
     const response = await api.get(`/api/virtual-tours/${id}/analytics`);
+    return response.data;
+  },
+  getVirtualTourTypes: async () => {
+    const response = await api.get('/api/virtual-tours/types');
+    return response.data;
+  },
+  getVirtualTourCountries: async () => {
+    const response = await api.get('/api/virtual-tours/countries');
     return response.data;
   },
 
