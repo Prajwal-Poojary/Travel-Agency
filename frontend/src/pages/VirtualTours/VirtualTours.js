@@ -48,25 +48,32 @@ const VirtualTours = () => {
       color: 'from-blue-500 to-purple-600'
     },
     {
-      id: '360',
+      id: '360_video',
       icon: Play,
       title: '360° Videos',
       description: 'Immersive video experiences',
       color: 'from-green-500 to-emerald-600'
     },
     {
-      id: 'vr',
+      id: 'interactive_360',
       icon: Eye,
-      title: 'VR Ready',
-      description: 'Virtual reality compatibility',
+      title: 'Interactive',
+      description: 'Interactive virtual experiences',
       color: 'from-orange-500 to-red-600'
     },
     {
-      id: 'audio',
-      icon: Headphones,
-      title: 'Audio Guide',
-      description: 'Professional narration',
+      id: 'drone_360',
+      icon: Camera,
+      title: 'Drone Tours',
+      description: 'Aerial drone perspectives',
       color: 'from-purple-500 to-pink-600'
+    },
+    {
+      id: 'cultural_360',
+      icon: Headphones,
+      title: 'Cultural',
+      description: 'Cultural heritage sites',
+      color: 'from-indigo-500 to-blue-600'
     }
   ];
 
