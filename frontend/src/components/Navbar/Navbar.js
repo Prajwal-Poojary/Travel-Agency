@@ -76,6 +76,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation - Only show for authenticated users */}
+          {/* Hide primary nav if not authenticated */}
           {isAuthenticated && (
             <div className="hidden md:flex items-center space-x-8">
               {navItems.map((item) => {
