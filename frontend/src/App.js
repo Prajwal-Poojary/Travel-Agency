@@ -95,6 +95,9 @@ function App() {
             {/* Navigation */}
             <Navbar />
             
+            {/* Footer should always be visible */}
+            
+            
             {/* Main Content */}
             <main className="relative z-10">
               <AnimatePresence mode="wait">
