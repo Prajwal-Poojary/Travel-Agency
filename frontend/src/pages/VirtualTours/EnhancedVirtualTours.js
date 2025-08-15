@@ -43,6 +43,9 @@ const EnhancedVirtualTours = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [playerError, setPlayerError] = useState(null);
+  const readyTimerRef = useRef(null);
 
   // Fetch virtual tours
   const { data: tours, isLoading, error } = useQuery(
