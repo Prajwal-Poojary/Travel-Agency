@@ -284,7 +284,7 @@ async def get_countries():
 
 @app.get('/api/destinations/activities')
 async def get_activities():
-    if not db:
+    if db is None:
         return []
     activities = []
     for d in db.destinations.find({}, {'activities': 1}):
