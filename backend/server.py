@@ -108,16 +108,16 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
         username = payload.get('username')
         if not username:
-            raise HTTPException(status_code=401, detail='Invalid token')
+            raise HTTPException(status_code=401, detail='Invalid token - no username')
         user = db.users.find_one({'username': username}) if db else None
         if not user:
             raise HTTPException(status_code=401, detail='User not found')
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail='Token expired')
-    except HTTPException:
-        raise
-    except Exception:
+    except Exception as e:
+        # Emit debug info without leaking secrets
+        print('[AUTH_DEBUG] Token validation failed:', type(e).__name__, str(e)[:200])
         raise HTTPException(status_code=401, detail='Invalid token')
 
 # ------------ Startup: seed demo user and data ------------
