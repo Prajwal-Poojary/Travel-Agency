@@ -7,9 +7,13 @@ import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-// Load env
-dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+// Load env (cross-platform safe)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // ---- Env & Config ----
 const MONGO_URL = process.env.MONGO_URL;
@@ -18,6 +22,11 @@ const ALGORITHM = 'HS256';
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = parseInt(process.env.PORT || '8001', 10);
+
+if (!MONGO_URL) {
+  console.error('[BOOT] MONGO_URL is not set. Create backend/.env with MONGO_URL, JWT_SECRET_KEY, and CORS_ORIGINS.');
+  process.exit(1);
+}
 
 // ---- App ----
 const app = express();
