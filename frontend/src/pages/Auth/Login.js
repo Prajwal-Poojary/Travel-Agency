@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Globe } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +14,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   const handleChange = (e) => {
     setFormData({
@@ -29,10 +31,24 @@ const Login = () => {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        navigate('/');
+        navigate(from, { replace: true });
       }
     } catch (error) {
       console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await login('demo@example.com', 'password123');
+      if (result.success) {
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      // error toast handled in context
     } finally {
       setIsLoading(false);
     }
@@ -137,11 +153,22 @@ const Login = () => {
 
           {/* Demo Credentials */}
           <div className="mt-6 p-4 bg-primary-500/10 rounded-lg border border-primary-500/20">
-            <p className="text-sm text-primary-300 font-medium mb-2">Demo Credentials:</p>
-            <p className="text-xs text-gray-300">
-              Email: demo@travelai.com<br />
-              Password: demo123
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-primary-300 font-medium mb-2">Demo Account:</p>
+                <p className="text-xs text-gray-300">
+                  Email: demo@example.com<br />
+                  Password: password123
+                </p>
+              </div>
+              <button
+                onClick={handleDemoLogin}
+                className="px-3 py-2 btn-gradient rounded-lg text-sm font-semibold"
+                disabled={isLoading}
+              >
+                Use Demo
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>

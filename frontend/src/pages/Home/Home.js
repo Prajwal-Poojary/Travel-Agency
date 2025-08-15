@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   MapPin, 
   Star, 
@@ -54,7 +54,7 @@ const Home = () => {
     {
       url: 'https://images.unsplash.com/photo-1486912500284-6f2462ba07ea?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dGlmdWwlMjBsYW5kc2NhcGVzfGVufDB8fHx8MTc1MjEzOTY1MHww&ixlib=rb-4.1.0&q=85',
       title: 'Mountain Sunset Retreats',
-      subtitle: 'Witness nature\'s most spectacular moments'
+      subtitle: "Witness nature's most spectacular moments"
     }
   ];
 
@@ -162,21 +162,42 @@ const Home = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/destinations"
-                  className="btn-gradient px-8 py-4 rounded-full text-lg font-semibold hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  Explore Destinations
-                </Link>
-                
-                <Link
-                  to="/ai-assistant"
-                  className="glass px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Bot className="w-5 h-5" />
-                  AI Assistant
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/destinations"
+                      className="btn-gradient px-8 py-4 rounded-full text-lg font-semibold hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      Explore Destinations
+                    </Link>
+                    
+                    <Link
+                      to="/ai-assistant"
+                      className="glass px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Bot className="w-5 h-5" />
+                      AI Assistant
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="btn-gradient px-8 py-4 rounded-full text-lg font-semibold hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      Login to Explore
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="glass px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Users className="w-5 h-5" />
+                      Create Account
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>
@@ -325,10 +346,10 @@ const Home = () => {
                         {destination.price_range}
                       </span>
                       <Link
-                        to={`/destinations/${destination.destination_id}`}
+                        to={isAuthenticated ? `/destinations/${destination.destination_id}` : '/login'}
                         className="btn-gradient px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2"
                       >
-                        Explore
+                        {isAuthenticated ? 'Explore' : 'Login to Explore'}
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
