@@ -123,10 +123,10 @@ function App() {
                       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
-                      <Route path="/ai-assistant" element={<AIAssistant />} />
-                      <Route path="/ai-assistant-basic" element={<AIAssistantBasic />} />
-                      <Route path="/virtual-tours" element={<VirtualTours />} />
-                      <Route path="/virtual-tours-basic" element={<VirtualToursBasic />} />
+                      <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
+                      <Route path="/ai-assistant-basic" element={<ProtectedRoute><AIAssistantBasic /></ProtectedRoute>} />
+                      <Route path="/virtual-tours" element={<ProtectedRoute><VirtualTours /></ProtectedRoute>} />
+                      <Route path="/virtual-tours-basic" element={<ProtectedRoute><VirtualToursBasic /></ProtectedRoute>} />
                       <Route path="/about" element={<About />} />
                       <Route path="/contact" element={<Contact />} />
                     </Routes>
