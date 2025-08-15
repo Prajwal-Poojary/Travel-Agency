@@ -278,7 +278,7 @@ async def get_destinations(search: Optional[str] = None, country: Optional[str] 
 
 @app.get('/api/destinations/countries')
 async def get_countries():
-    if not db:
+    if db is None:
         return []
     return sorted(list(set([d.get('country') for d in db.destinations.find({}, {'country': 1}) if d.get('country')])))
 
