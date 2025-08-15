@@ -227,7 +227,7 @@ async def login(payload: LoginRequest):
 
 @app.post('/api/auth/register')
 async def register(payload: RegisterRequest):
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail='Database not connected')
     if db.users.find_one({'$or': [{'email': payload.email}, {'username': payload.username}] }):
         raise HTTPException(status_code=400, detail='Email or username already exists')
