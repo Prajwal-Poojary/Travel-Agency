@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import sys
 
 # Configuration
-BASE_URL = "https://user-access-flow.preview.emergentagent.com"
+BASE_URL = "https://user-login-flow-1.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 # Test data
