@@ -547,13 +547,15 @@ const EnhancedVirtualTours = () => {
                     <div className="aspect-video bg-gray-800 flex items-center justify-center relative">
                       {/* Embedded YouTube Player */}
                       <iframe
-                        src={`${formatYouTubeEmbedUrl(selectedTour.video_url)}?enablejsapi=1&rel=0&modestbranding=1`}
+                        src={`${formatYouTubeEmbedUrl(selectedTour.video_url)}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`}
                         title={selectedTour.name}
                         ref={playerRef}
                         className="w-full h-full"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
+                        onLoad={() => { setPlayerReady(true); setPlayerError(null); }}
+                        onError={() => { setPlayerError('unavailable'); }}
                       />
                       
                       {/* Custom Controls Overlay */}
