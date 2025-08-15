@@ -42,6 +42,7 @@ app.use(cors({
 let client; let db;
 function parseDbName(url) {
   try {
+    // Extract last path segment before ? or end
     const m = url.match(/\/([^/?]+)(?:\?|$)/);
     return m && m[1] ? decodeURIComponent(m[1]) : undefined;
   } catch (e) { return undefined; }
