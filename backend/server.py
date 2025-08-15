@@ -304,7 +304,24 @@ async def get_destination(destination_id: str):
     return doc
 
 @app.post('/api/chat')
-async def chat(payload: ChatRequest):
+async def chat(payload: ChatRequest, user=Depends(get_current_user)):
     # Minimal placeholder so UI works behind auth
     reply = "Thanks for your message! The AI service is enabled for authenticated users. Ask me anything about travel."
     return { 'session_id': payload.session_id or f'session_{uuid.uuid4().hex[:8]}', 'response': reply, 'timestamp': datetime.utcnow().isoformat() }
+
+@app.get('/api/chat/sessions/{session_id}')
+async def get_chat_session(session_id: str, user=Depends(get_current_user)):
+    # Placeholder for chat session retrieval
+    return {
+        'session_id': session_id,
+        'messages': [
+            {'role': 'user', 'content': 'Hello', 'timestamp': datetime.utcnow().isoformat()},
+            {'role': 'assistant', 'content': 'Thanks for your message! The AI service is enabled for authenticated users. Ask me anything about travel.', 'timestamp': datetime.utcnow().isoformat()}
+        ],
+        'created_at': datetime.utcnow().isoformat()
+    }
+
+@app.delete('/api/chat/sessions/{session_id}')
+async def delete_chat_session(session_id: str, user=Depends(get_current_user)):
+    # Placeholder for chat session deletion
+    return {'message': f'Chat session {session_id} deleted successfully'}
