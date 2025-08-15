@@ -110,6 +110,20 @@ const EnhancedVirtualTours = () => {
     setCurrentTime(time);
   };
 
+  // Poll current time from YouTube via postMessage events (limited without enablejsapi)
+  useEffect(() => {
+    const onMessage = (event) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.info && typeof data.info.currentTime === 'number') {
+          setCurrentTime(data.info.currentTime);
+        }
+      } catch {}
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   const skipToHighlight = (time) => {
     const timeInSeconds = parseFloat(time.split(':')[0]) * 60 + parseFloat(time.split(':')[1]);
     setCurrentTime(timeInSeconds);
