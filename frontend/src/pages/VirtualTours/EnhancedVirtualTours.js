@@ -122,6 +122,29 @@ const EnhancedVirtualTours = () => {
     }
   };
 
+  const formatYouTubeEmbedUrl = (url) => {
+    if (!url) return '';
+    // If already an embed URL, return as is
+    if (url.includes('youtube.com/embed/')) return url;
+    // Convert watch or share links to embed format
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes('youtube.com')) {
+        const vid = u.searchParams.get('v');
+        if (vid) return `https://www.youtube.com/embed/${vid}`;
+        const parts = u.pathname.split('/');
+        const idx = parts.indexOf('embed');
+        if (idx !== -1 && parts[idx + 1]) return `https://www.youtube.com/embed/${parts[idx + 1]}`;
+      } else if (u.hostname === 'youtu.be') {
+        const vid = u.pathname.replace('/', '');
+        if (vid) return `https://www.youtube.com/embed/${vid}`;
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+    return url;
+  };
+
   const formatDuration = (duration) => {
     return duration || '0:00';
   };
