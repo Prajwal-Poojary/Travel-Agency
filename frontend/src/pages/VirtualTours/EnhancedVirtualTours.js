@@ -558,6 +558,25 @@ const EnhancedVirtualTours = () => {
                         onError={() => { setPlayerError('unavailable'); }}
                       />
                       
+                      {/* Error / Fallback UI when YouTube blocks embedding */}
+                      {playerError === 'unavailable' && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-center p-6">
+                          <Camera className="w-12 h-12 text-gray-300 mb-3" />
+                          <h4 className="text-white font-semibold mb-2">Video unavailable</h4>
+                          <p className="text-gray-300 text-sm mb-4 max-w-md">
+                            This video can't be embedded due to content restrictions. You can still watch it directly on YouTube.
+                          </p>
+                          <a
+                            href={formatYouTubeEmbedUrl(selectedTour.video_url).replace('/embed/', '/watch?v=')}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white"
+                          >
+                            Open on YouTube
+                          </a>
+                        </div>
+                      )}
+
                       {/* Custom Controls Overlay */}
                       <AnimatePresence>
                         {showControls && (
