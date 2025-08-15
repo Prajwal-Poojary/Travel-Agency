@@ -242,8 +242,8 @@ router.get('/sessions/:session_id', auth, async (req, res) => {
 
 // @route   DELETE /api/chat/sessions/:session_id
 // @desc    Clear chat session
-// @access  Public
-router.delete('/sessions/:session_id', async (req, res) => {
+// @access  Private (requires login)
+router.delete('/sessions/:session_id', auth, async (req, res) => {
   try {
     const { session_id } = req.params;
     
