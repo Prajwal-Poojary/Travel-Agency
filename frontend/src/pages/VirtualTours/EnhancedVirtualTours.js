@@ -80,6 +80,8 @@ const EnhancedVirtualTours = () => {
     setSelectedTour(tour);
     setCurrentTime(0);
     setIsPlaying(false);
+    setPlayerReady(false);
+    setPlayerError(null);
     toast.success(`Starting virtual tour of ${tour.name}`);
   };
 
