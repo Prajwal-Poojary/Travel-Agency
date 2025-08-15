@@ -15,7 +15,8 @@ import {
   Shield,
   Award,
   TrendingUp,
-  Heart
+  Heart,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useQuery } from 'react-query';
@@ -291,7 +292,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Destinations */}
+      {/* Featured Destinations (Locked until login) */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -304,58 +305,78 @@ const Home = () => {
               Featured Destinations
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Discover our handpicked selection of the world's most stunning destinations
+              {isAuthenticated ? 'Discover our handpicked selection of the world\'s most stunning destinations' : 'Login to unlock curated destination lists tailored for you'}
             </p>
           </motion.div>
 
-          {isLoading ? (
-            <div className="flex justify-center">
-              <LoadingSpinner size="large" text="Loading destinations..." />
-            </div>
+          {isAuthenticated ? (
+            isLoading ? (
+              <div className="flex justify-center">
+                <LoadingSpinner size="large" text="Loading destinations..." />
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {destinations?.slice(0, 6)?.map((destination, index) => (
+                  <motion.div
+                    key={destination.destination_id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="glass rounded-2xl overflow-hidden hover:shadow-glow transition-all duration-300 group"
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={destination.images?.[0] || '/api/placeholder/400/300'}
+                        alt={destination.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-white text-sm">{destination.rating}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-white mb-2">
+                        {destination.name}
+                      </h3>
+                      <p className="text-gray-300 mb-4 line-clamp-2">
+                        {destination.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-primary-400 font-semibold">
+                          {destination.price_range}
+                        </span>
+                        <Link
+                          to={`/destinations/${destination.destination_id}`}
+                          className="btn-gradient px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2"
+                        >
+                          Explore
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {destinations?.slice(0, 6)?.map((destination, index) => (
-                <motion.div
-                  key={destination.destination_id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="glass rounded-2xl overflow-hidden hover:shadow-glow transition-all duration-300 group"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={destination.images?.[0] || '/api/placeholder/400/300'}
-                      alt={destination.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-white text-sm">{destination.rating}</span>
-                    </div>
+            <div className="glass rounded-2xl p-8 border border-white/10">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+                    <Lock className="w-6 h-6 text-white" />
                   </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      {destination.name}
-                    </h3>
-                    <p className="text-gray-300 mb-4 line-clamp-2">
-                      {destination.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-primary-400 font-semibold">
-                        {destination.price_range}
-                      </span>
-                      <Link
-                        to={isAuthenticated ? `/destinations/${destination.destination_id}` : '/login'}
-                        className="btn-gradient px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2"
-                      >
-                        {isAuthenticated ? 'Explore' : 'Login to Explore'}
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </div>
+                  <div>
+                    <h3 className="text-white text-xl font-semibold">Login Required</h3>
+                    <p className="text-gray-300">Create an account or sign in to view featured destinations and personalized recommendations.</p>
                   </div>
-                </motion.div>
-              ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link to="/login" className="btn-gradient px-6 py-3 rounded-lg font-semibold">Login</Link>
+                  <Link to="/register" className="px-6 py-3 rounded-lg font-semibold border border-white/20 hover:bg-white/10 transition-colors">Sign Up</Link>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 // Get backend URL from environment variables
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL; // Do not hardcode fallback per ingress rules
 
 // Create axios instance
 const api = axios.create({
@@ -101,7 +101,7 @@ export const enhancedApiService = {
 
   // Enhanced AI Services
   getAIRecommendations: async (preferences) => {
-    const response = await api.post('/api/ai/recommendations', preferences);
+    const response = await api.post('/api/chat/recommendations', preferences);
     return response.data;
   },
   chatWithAI: async (message) => {

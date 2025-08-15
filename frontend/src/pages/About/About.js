@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Users, Award, Zap } from 'lucide-react';
+import { Globe, Users, Award, Zap, Linkedin } from 'lucide-react';
 
 const About = () => {
   return (
@@ -54,6 +54,29 @@ const About = () => {
               <p className="text-gray-300 text-sm">Smart recommendations</p>
             </div>
           </div>
+        </div>
+
+        {/* Founder Section */}
+        <div className="mt-8 glass rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+              <Linkedin className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h3 className="text-white text-xl font-semibold">Founder &amp; Developer</h3>
+              <p className="text-gray-300">Prajwal Poojary</p>
+              <p className="text-gray-400 text-sm">Building delightful travel experiences with AI</p>
+            </div>
+          </div>
+          <a
+            href="https://www.linkedin.com/in/prajwal-poojary-67ba4a2a3/"
+            target="_blank"
+            rel="noreferrer"
+            className="btn-gradient px-6 py-3 rounded-lg font-semibold hover:shadow-glow"
+            title="Connect on LinkedIn"
+          >
+            Connect on LinkedIn
+          </a>
         </div>
       </motion.div>
     </div>

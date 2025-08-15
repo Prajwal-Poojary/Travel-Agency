@@ -28,6 +28,9 @@ const packagesRoutes = require('./routes/packages');
 const statsRoutes = require('./routes/stats');
 const virtualToursRoutes = require('./routes/virtual-tours');
 
+// Models
+const User = require('./models/User');
+
 // Security middleware
 app.use(helmet());
 app.use(compression());
@@ -51,11 +54,36 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // MongoDB connection
+async function ensureDemoUser() {
+  try {
+    const demoEmail = 'demo@example.com';
+    let user = await User.findOne({ email: demoEmail });
+    if (!user) {
+      user = new User({
+        username: 'demo_user',
+        email: demoEmail,
+        password: 'password123',
+        full_name: 'Demo User'
+      });
+      await user.save();
+      console.log('✅ Demo user ensured (demo@example.com / password123)');
+    } else {
+      console.log('ℹ️ Demo user already exists');
+    }
+  } catch (e) {
+    console.error('❌ Error ensuring demo user:', e.message);
+  }
+}
+
 mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/advanced_travel_db', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected successfully'))
+.then(async () => {
+  console.log('MongoDB connected successfully');
+  // Ensure demo user is available for demo login button
+  await ensureDemoUser();
+})
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Socket.IO connection handling
