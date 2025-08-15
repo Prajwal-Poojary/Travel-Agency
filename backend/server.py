@@ -212,7 +212,7 @@ async def health():
 
 @app.post('/api/auth/login')
 async def login(payload: LoginRequest):
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail='Database not connected')
     user = db.users.find_one({'email': payload.email})
     if not user or not verify_password(payload.password, user['password']):
