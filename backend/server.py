@@ -110,15 +110,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         username = payload.get('username')
         if not username:
             raise HTTPException(status_code=401, detail='Invalid token')
-        
-        # Debug: Check database connection
-        if db is None:
-            print(f"DEBUG: Database is None")
-            raise HTTPException(status_code=500, detail='Database not connected')
-        
-        user = db.users.find_one({'username': username})
-        print(f"DEBUG: Looking for user '{username}', found: {user is not None}")
-        
+        user = db.users.find_one({'username': username}) if db else None
         if not user:
             raise HTTPException(status_code=401, detail='User not found')
         return user
@@ -126,8 +118,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail='Token expired')
     except HTTPException:
         raise
-    except Exception as e:
-        print(f"DEBUG: JWT decode error: {e}")
+    except Exception:
         raise HTTPException(status_code=401, detail='Invalid token')
 
 # ------------ Startup: seed demo user and data ------------
