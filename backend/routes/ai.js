@@ -222,8 +222,8 @@ router.post('/', auth, [
 
 // @route   GET /api/chat/sessions/:session_id
 // @desc    Get chat session history
-// @access  Public
-router.get('/sessions/:session_id', async (req, res) => {
+// @access  Private (requires login)
+router.get('/sessions/:session_id', auth, async (req, res) => {
   try {
     const { session_id } = req.params;
     
