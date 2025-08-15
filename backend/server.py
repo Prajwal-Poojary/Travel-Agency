@@ -84,8 +84,10 @@ class DestinationOut(BaseModel):
 def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-def verify_password(password: str, hashed: bytes) -> bool:
+def verify_password(password: str, hashed) -> bool:
     try:
+        if isinstance(hashed, str):
+            hashed = hashed.encode('utf-8')
         return bcrypt.checkpw(password.encode('utf-8'), hashed)
     except Exception:
         return False
