@@ -160,8 +160,8 @@ const generateAIResponse = async (message, chatHistory = []) => {
 
 // @route   POST /api/chat
 // @desc    Chat with AI assistant
-// @access  Public
-router.post('/', [
+// @access  Private (requires login)
+router.post('/', auth, [
   body('message').isLength({ min: 1, max: 1000 }),
   body('session_id').optional().isString()
 ], async (req, res) => {
