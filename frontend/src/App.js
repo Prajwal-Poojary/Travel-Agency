@@ -137,6 +137,9 @@ function App() {
             
             {/* Scroll to Top Button */}
             <ScrollToTop />
+
+            {/* Footer */}
+            <Footer />
             
             {/* Toast Notifications */}
             <Toaster
