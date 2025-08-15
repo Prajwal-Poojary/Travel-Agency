@@ -116,11 +116,11 @@ function App() {
                   }>
                     <Routes>
                       <Route path="/" element={<Home />} />
-                      <Route path="/destinations" element={<Destinations />} />
-                      <Route path="/destinations/:id" element={<DestinationDetail />} />
-                      <Route path="/bookings" element={<Bookings />} />
-                      <Route path="/bookings-basic" element={<BookingsBasic />} />
-                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/destinations" element={<ProtectedRoute><Destinations /></ProtectedRoute>} />
+                      <Route path="/destinations/:id" element={<ProtectedRoute><DestinationDetail /></ProtectedRoute>} />
+                      <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+                      <Route path="/bookings-basic" element={<ProtectedRoute><BookingsBasic /></ProtectedRoute>} />
+                      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/ai-assistant" element={<AIAssistant />} />
