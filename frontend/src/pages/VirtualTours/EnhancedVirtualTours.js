@@ -542,7 +542,7 @@ const EnhancedVirtualTours = () => {
                     <div className="aspect-video bg-gray-800 flex items-center justify-center relative">
                       {/* Embedded YouTube Player */}
                       <iframe
-                        src={formatYouTubeEmbedUrl(selectedTour.video_url)}
+                        src={`${formatYouTubeEmbedUrl(selectedTour.video_url)}?enablejsapi=1&rel=0&modestbranding=1`}
                         title={selectedTour.name}
                         ref={playerRef}
                         className="w-full h-full"
