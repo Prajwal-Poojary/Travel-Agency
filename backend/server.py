@@ -293,7 +293,7 @@ async def get_activities():
 
 @app.get('/api/destinations/{destination_id}', response_model=DestinationOut)
 async def get_destination(destination_id: str):
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail='Database not connected')
     doc = db.destinations.find_one({'destination_id': destination_id})
     if not doc:
