@@ -257,7 +257,7 @@ async def profile(user=Depends(get_current_user)):
 
 @app.get('/api/destinations', response_model=List[DestinationOut])
 async def get_destinations(search: Optional[str] = None, country: Optional[str] = None, activity: Optional[str] = None, limit: int = 100):
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail='Database not connected')
     query = {}
     if search:
