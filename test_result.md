@@ -106,6 +106,28 @@ curl -s -X POST http://127.0.0.1:8001/api/chat \
 
 ## BACKEND TEST HISTORY
 
+### August 15, 2025 - Backend Regression Test (Patch 4)
+- **Agent**: testing
+- **Status**: ✅ COMPLETED
+- **Results**: 8/8 regression tests passed (100% success rate)
+- **Test Scope**: FastAPI backend contract validation as per review request
+- **Specific Tests Validated**:
+  1. POST /api/auth/login with demo@example.com/password123 → 200 + access_token ✅
+  2. GET /api/auth/profile with Bearer token → 200 + username: demo_user ✅
+  3. POST /api/chat with Bearer token {message:"hi"} → 200 + session_id + response ✅
+  4. POST /api/chat without token → 401 Unauthorized ✅
+  5. GET /api/destinations → 200 + array with 8 destinations ✅
+  6. GET /api/destinations/countries → 200 + array with 8 countries ✅
+  7. GET /api/destinations/activities → 200 + array with 35 activities ✅
+  8. GET /api/health → 200 + status: healthy ✅
+- **Key Validations**:
+  - FastAPI backend confirmed live and operational (not Node.js as mentioned in request)
+  - All backend routes correctly include /api prefix for Kubernetes ingress
+  - JWT authentication working consistently across all protected endpoints
+  - Token consistency maintained - same token from login works for profile and chat
+  - All public endpoints (destinations, countries, activities, health) accessible
+- **Comment**: All regression requirements from review request successfully validated. Backend is FastAPI (Python) running correctly on internal port 8001 mapped to external URL.
+
 ### August 15, 2025 - Backend Regression Test (Patch 3)
 - **Agent**: testing
 - **Status**: ✅ COMPLETED
