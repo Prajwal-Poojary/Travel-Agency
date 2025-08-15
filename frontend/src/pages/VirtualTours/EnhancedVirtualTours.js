@@ -530,6 +530,7 @@ const EnhancedVirtualTours = () => {
                       <iframe
                         src={formatYouTubeEmbedUrl(selectedTour.video_url)}
                         title={selectedTour.name}
+                        ref={playerRef}
                         className="w-full h-full"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
