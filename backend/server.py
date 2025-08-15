@@ -110,13 +110,24 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         username = payload.get('username')
         if not username:
             raise HTTPException(status_code=401, detail='Invalid token')
-        user = db.users.find_one({'username': username}) if db else None
+        
+        # Debug: Check database connection
+        if db is None:
+            print(f"DEBUG: Database is None")
+            raise HTTPException(status_code=500, detail='Database not connected')
+        
+        user = db.users.find_one({'username': username})
+        print(f"DEBUG: Looking for user '{username}', found: {user is not None}")
+        
         if not user:
             raise HTTPException(status_code=401, detail='User not found')
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail='Token expired')
-    except Exception:
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"DEBUG: JWT decode error: {e}")
         raise HTTPException(status_code=401, detail='Invalid token')
 
 # ------------ Startup: seed demo user and data ------------
