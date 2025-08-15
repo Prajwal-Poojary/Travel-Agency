@@ -87,8 +87,23 @@ const EnhancedVirtualTours = () => {
     setIsFullscreen(false);
   };
 
+  const playerRef = useRef(null);
+
   const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
+    setIsPlaying((prev) => {
+      const next = !prev;
+      // Attempt to control playback via postMessage API (works only for YouTube Player API enabled embeds)
+      try {
+        const iframe = playerRef.current;
+        if (iframe && iframe.contentWindow) {
+          const cmd = next ? 'playVideo' : 'pauseVideo';
+          iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*');
+        }
+      } catch (e) {
+        // no-op; fallback to user controls
+      }
+      return next;
+    });
   };
 
   const handleTimeUpdate = (time) => {
