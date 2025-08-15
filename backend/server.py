@@ -120,7 +120,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
 # ------------ Startup: seed demo user and data ------------
 @app.on_event('startup')
 async def startup_event():
-    if not db:
+    if db is None:
         return
     # Ensure collections
     db.users.create_index('email', unique=True)
