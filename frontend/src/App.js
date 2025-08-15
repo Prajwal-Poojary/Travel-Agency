@@ -9,6 +9,8 @@ import { ThemeProvider } from './context/ThemeContext';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+import Footer from './components/Footer/Footer';
 import LoadingSpinner from './components/UI/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import ScrollToTop from './components/UI/ScrollToTop';
