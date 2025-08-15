@@ -109,7 +109,7 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         username = payload.get('username')
         if not username:
             raise HTTPException(status_code=401, detail='Invalid token - no username')
-        user = db.users.find_one({'username': username}) if db else None
+        user = db.users.find_one({'username': username}) if db is not None else None
         if not user:
             raise HTTPException(status_code=401, detail='User not found')
         return user
