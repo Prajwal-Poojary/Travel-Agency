@@ -5,10 +5,12 @@ import jwt
 from datetime import datetime, timedelta
 from typing import Optional, List
 
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, Field
-from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo import MongoClient, ASCENDING, DESCENDING, TEXT
 from pymongo.errors import DuplicateKeyError
 
 # --- Environment variables ---
