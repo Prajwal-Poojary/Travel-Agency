@@ -198,7 +198,8 @@ async def chat(body: ChatBody, user=Depends(get_user_from_token)):
             genai_types.SafetySetting(category=genai_types.HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=genai_types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE),
             genai_types.SafetySetting(category=genai_types.HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=genai_types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE),
         ]
-        result = await app.loop.run_in_executor(
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
             None,
             lambda: gemini_client.models.generate_content(
                 model='gemini-2.0-flash',
