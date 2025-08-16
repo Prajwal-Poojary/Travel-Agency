@@ -233,7 +233,10 @@ class BookingRequest(BaseModel):
     special_requests: Optional[str] = None
 
 # --- FastAPI app ---
-app = FastAPI()
+app = FastAPI(default_response_class=ORJSONResponse)
+
+# Compression for large JSON responses
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # CORS
 app.add_middleware(
