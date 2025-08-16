@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException, Depends, Header, Request
+from fastapi import FastAPI, HTTPException, Depends, Header, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -33,7 +33,7 @@ if not MONGO_URL:
     raise RuntimeError('MONGO_URL is required in backend/.env')
 
 # ---- App ----
-app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.1.0')
+app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.2.0')
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS if CORS_ORIGINS else ["*"],
@@ -125,13 +125,22 @@ async def get_user_from_token(authorization: Optional[str] = Header(None)):
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail='Invalid token')
 
+# ---- Seed & Indexes ----
 async def ensure_indexes_and_seed():
-    # Indexes for users
+    # Users
     await db.users.create_index('email', unique=True)
     await db.users.create_index('username', unique=True)
-    # Indexes for chat sessions
+
+    # Chat sessions
     await db.chat_sessions.create_index('session_id', unique=True)
     await db.chat_sessions.create_index('user_id')
+
+    # Virtual tours
+    await db.virtual_tours.create_index('tour_id', unique=True)
+    await db.virtual_tours.create_index('name')
+    await db.virtual_tours.create_index('country')
+    await db.virtual_tours.create_index('tour_type')
+    await db.virtual_tours.create_index('featured')
 
     # Seed demo user
     demo = await db.users.find_one({'email': 'demo@example.com'})
@@ -145,6 +154,125 @@ async def ensure_indexes_and_seed():
             'avatar': None,
             'created_at': datetime.utcnow(),
         })
+
+    # Seed virtual tours (only if empty)
+    count = await db.virtual_tours.estimated_document_count()
+    if count == 0:
+        seed = [
+            {
+                'tour_id': str(uuid4()),
+                'name': 'Tokyo 360° Night Walk',
+                'country': 'Japan',
+                'duration': '12:45',
+                'tour_type': '360_video',
+                'thumbnail': 'https://i.ytimg.com/vi/6kAqQWBH6V0/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=6kAqQWBH6V0',
+                'description': 'Experience the neon-lit streets of Shinjuku and Shibuya in fully immersive 360°.',
+                'features': ['360° View', 'City Walk', 'Nightlife'],
+                'featured': True,
+                'highlights': [
+                    {'time': '00:45', 'title': 'Shinjuku Crossing', 'description': 'Bustling intersection views'},
+                    {'time': '05:10', 'title': 'Golden Gai', 'description': 'Cozy alleys and bars'},
+                ],
+                'interactive_elements': [
+                    {'info': 'Look left at 02:10 to see Godzilla Head on Hotel Gracery'},
+                ]
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'Santorini Cliffside 360°',
+                'country': 'Greece',
+                'duration': '9:03',
+                'tour_type': 'drone_360',
+                'thumbnail': 'https://i.ytimg.com/vi/m2QK_wC9mE8/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=m2QK_wC9mE8',
+                'description': 'A breathtaking aerial 360° tour of Santorini’s blue domes and caldera views.',
+                'features': ['Drone 360', 'Coastline', 'Sunset'],
+                'featured': True,
+                'highlights': [
+                    {'time': '01:40', 'title': 'Oia Blue Domes', 'description': 'Iconic rooftops at golden hour'},
+                ],
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'Machu Picchu Interactive Tour',
+                'country': 'Peru',
+                'duration': '14:22',
+                'tour_type': 'interactive_360',
+                'thumbnail': 'https://i.ytimg.com/vi/2m8uRkJ8A_4/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=2m8uRkJ8A_4',
+                'description': 'Explore the ancient citadel with points-of-interest overlays and an audio guide.',
+                'features': ['Interactive', 'Ruins', 'Mountains'],
+                'featured': True,
+                'highlights': [
+                    {'time': '03:20', 'title': 'Sun Temple', 'description': 'Stunning stonework and vistas'},
+                ],
+                'interactive_elements': [
+                    {'info': 'Tap on the terraces (05:30) to learn about Inca agriculture'},
+                ]
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'Paris Louvre 360° Walkthrough',
+                'country': 'France',
+                'duration': '11:11',
+                'tour_type': 'cultural_360',
+                'thumbnail': 'https://i.ytimg.com/vi/7A1tM6l5oMc/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=7A1tM6l5oMc',
+                'description': 'A cultural 360° stroll through Louvre courtyards and nearby landmarks.',
+                'features': ['Museums', 'Culture', 'City Walk'],
+                'featured': False,
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'New Zealand Fiordland 360°',
+                'country': 'New Zealand',
+                'duration': '10:02',
+                'tour_type': 'drone_360',
+                'thumbnail': 'https://i.ytimg.com/vi/h0eS0uU56Nw/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=h0eS0uU56Nw',
+                'description': 'Soar above Milford Sound and dramatic fjords in stunning 360°.',
+                'features': ['Nature', 'Drone 360', 'Mountains'],
+                'featured': False,
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'Cairo Pyramids 360°',
+                'country': 'Egypt',
+                'duration': '8:27',
+                'tour_type': 'interactive_360',
+                'thumbnail': 'https://i.ytimg.com/vi/1dV7l8l2rKs/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=1dV7l8l2rKs',
+                'description': 'Interactive 360° with pyramid facts and quick time jumps to key viewpoints.',
+                'features': ['Desert', 'History', 'Interactive'],
+                'featured': False,
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'Bali Ubud Rice Terraces 360°',
+                'country': 'Indonesia',
+                'duration': '7:59',
+                'tour_type': '360_video',
+                'thumbnail': 'https://i.ytimg.com/vi/i3e0iQH3D1g/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=i3e0iQH3D1g',
+                'description': 'Walk through lush emerald terraces and jungle sounds in 360°.',
+                'features': ['Nature', '360° View', 'Culture'],
+                'featured': False,
+            },
+            {
+                'tour_id': str(uuid4()),
+                'name': 'New York City 360° Rooftop',
+                'country': 'USA',
+                'duration': '6:45',
+                'tour_type': '360_video',
+                'thumbnail': 'https://i.ytimg.com/vi/2-Bm-t5nAnw/hqdefault.jpg',
+                'video_url': 'https://www.youtube.com/watch?v=2-Bm-t5nAnw',
+                'description': 'Iconic skyline views from a Midtown rooftop in 360°.',
+                'features': ['City', 'Skyline', '360° View'],
+                'featured': False,
+            },
+        ]
+        await db.virtual_tours.insert_many(seed)
 
 # ---- Startup ----
 @app.on_event('startup')
@@ -292,6 +420,74 @@ async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
         return {'recommendations': lines[:10]}
     except Exception:
         return {'recommendations': ['Unable to generate recommendations at this time. Please try again later.']}
+
+# ---- Virtual Tours API (Public GET endpoints) ----
+@app.get('/api/virtual-tours')
+async def get_virtual_tours(
+    search: Optional[str] = Query(None),
+    type: Optional[str] = Query(None, alias='type'),
+    country: Optional[str] = Query(None),
+    page: int = 1,
+    limit: int = 12,
+):
+    filters = {}
+    if search:
+        filters['$or'] = [
+            {'name': {'$regex': search, '$options': 'i'}},
+            {'description': {'$regex': search, '$options': 'i'}},
+            {'country': {'$regex': search, '$options': 'i'}},
+        ]
+    if type:
+        filters['tour_type'] = type
+    if country:
+        filters['country'] = country
+
+    skip = max(0, (page - 1) * limit)
+    cursor = db.virtual_tours.find(filters).sort('featured', -1).skip(skip).limit(limit)
+    results = []
+    async for doc in cursor:
+        results.append(doc)
+    total = await db.virtual_tours.count_documents(filters)
+    return {
+        'items': results,
+        'page': page,
+        'limit': limit,
+        'total': total,
+        'has_more': (skip + len(results)) < total
+    }
+
+@app.get('/api/virtual-tours/featured')
+async def get_featured_virtual_tours(limit: int = 6):
+    cursor = db.virtual_tours.find({'featured': True}).sort('name', 1).limit(int(limit))
+    results = []
+    async for doc in cursor:
+        results.append(doc)
+    return results
+
+@app.get('/api/virtual-tours/types')
+async def get_virtual_tour_types():
+    pipeline = [
+        {'$group': {'_id': '$tour_type', 'count': {'$sum': 1}}},
+        {'$sort': {'_id': 1}}
+    ]
+    agg = db.virtual_tours.aggregate(pipeline)
+    types = []
+    async for t in agg:
+        types.append({'type': t['_id'], 'count': t['count']})
+    return {'types': types}
+
+@app.get('/api/virtual-tours/countries')
+async def get_virtual_tour_countries():
+    countries = await db.virtual_tours.distinct('country')
+    countries.sort()
+    return {'countries': countries}
+
+@app.get('/api/virtual-tours/{tour_id}')
+async def get_virtual_tour(tour_id: str):
+    tour = await db.virtual_tours.find_one({'tour_id': tour_id})
+    if not tour:
+        raise HTTPException(status_code=404, detail='Virtual tour not found')
+    return tour
 
 # ---- Run (handled by supervisor) ----
 # Do not add uvicorn.run here.
