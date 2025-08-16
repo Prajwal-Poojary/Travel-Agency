@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, Depends, Header, Request
-import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -13,6 +12,7 @@ import jwt
 from passlib.context import CryptContext
 from motor.motor_asyncio import AsyncIOMotorClient
 from uuid import uuid4
+import asyncio
 
 # Gemini SDK (2025)
 from google import genai
@@ -33,7 +33,7 @@ if not MONGO_URL:
     raise RuntimeError('MONGO_URL is required in backend/.env')
 
 # ---- App ----
-app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.0.0')
+app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.1.0')
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS if CORS_ORIGINS else ["*"],
@@ -47,7 +47,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # ---- DB ----
 client: AsyncIOMotorClient = AsyncIOMotorClient(MONGO_URL)
 db_name_match = re.search(r"/([^/?]+)(?:\?|$)", MONGO_URL)
-DB_NAME = getattr(client, 'options', None).dbName if getattr(client, 'options', None) and hasattr(client.options, 'dbName') else (db_name_match.group(1) if db_name_match else None)
+DB_NAME = client.get_default_database().name if getattr(client, 'get_default_database', None) and client.get_default_database() is not None else (db_name_match.group(1) if db_name_match else None)
 if not DB_NAME:
     raise RuntimeError('Database name not found in MONGO_URL')
 db = client[DB_NAME]
@@ -125,7 +125,15 @@ async def get_user_from_token(authorization: Optional[str] = Header(None)):
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail='Invalid token')
 
-async def ensure_demo_seed():
+async def ensure_indexes_and_seed():
+    # Indexes for users
+    await db.users.create_index('email', unique=True)
+    await db.users.create_index('username', unique=True)
+    # Indexes for chat sessions
+    await db.chat_sessions.create_index('session_id', unique=True)
+    await db.chat_sessions.create_index('user_id')
+
+    # Seed demo user
     demo = await db.users.find_one({'email': 'demo@example.com'})
     if not demo:
         await db.users.insert_one({
@@ -141,10 +149,7 @@ async def ensure_demo_seed():
 # ---- Startup ----
 @app.on_event('startup')
 async def on_start():
-    # Indexes
-    await db.users.create_index('email', unique=True)
-    await db.users.create_index('username', unique=True)
-    await ensure_demo_seed()
+    await ensure_indexes_and_seed()
 
 # ---- Routes ----
 @app.get('/')
@@ -187,12 +192,56 @@ async def profile(user=Depends(get_user_from_token)):
         user_id=user['user_id'], username=user['username'], email=user['email'], full_name=user.get('full_name',''), avatar=user.get('avatar'), created_at=user['created_at']
     )
 
+# ---- Chat persistence helpers ----
+async def upsert_session_message(user_id: str, session_id: str, role: str, content: str):
+    now = datetime.utcnow().isoformat()
+    await db.chat_sessions.update_one(
+        {'session_id': session_id, 'user_id': user_id},
+        {
+            '$setOnInsert': {
+                'session_id': session_id,
+                'user_id': user_id,
+                'created_at': now,
+                'messages': []
+            },
+            '$set': { 'updated_at': now },
+            '$push': { 'messages': {'role': role, 'content': content, 'timestamp': now} }
+        },
+        upsert=True
+    )
+
+@app.get('/api/chat/sessions')
+async def list_sessions(user=Depends(get_user_from_token)):
+    cursor = db.chat_sessions.find({'user_id': user['user_id']}, {'messages': {'$slice': 1}}).sort('updated_at', -1).limit(50)
+    sessions = []
+    async for s in cursor:
+        sessions.append({'session_id': s['session_id'], 'updated_at': s.get('updated_at'), 'created_at': s.get('created_at')})
+    return {'sessions': sessions}
+
+@app.get('/api/chat/sessions/{session_id}')
+async def get_session(session_id: str, user=Depends(get_user_from_token)):
+    s = await db.chat_sessions.find_one({'session_id': session_id, 'user_id': user['user_id']})
+    if not s:
+        return {'session_id': session_id, 'messages': [], 'created_at': None}
+    return {'session_id': session_id, 'messages': s.get('messages', []), 'created_at': s.get('created_at'), 'updated_at': s.get('updated_at')}
+
+@app.delete('/api/chat/sessions/{session_id}')
+async def delete_session(session_id: str, user=Depends(get_user_from_token)):
+    await db.chat_sessions.delete_one({'session_id': session_id, 'user_id': user['user_id']})
+    return {'message': f'Chat session {session_id} deleted successfully'}
+
 @app.post('/api/chat', response_model=ChatOut)
 async def chat(body: ChatBody, user=Depends(get_user_from_token)):
     session_id = body.session_id or f"session_{str(uuid4())[:8]}"
+    # persist user message first
+    await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='user', content=body.message)
+
     if not gemini_client:
-        # Fallback response when Gemini not configured
-        return ChatOut(session_id=session_id, response='AI service is not configured. Please add a valid GEMINI_API_KEY to backend/.env.', timestamp=datetime.utcnow())
+        # Save assistant fallback and return
+        fallback = 'AI service is not configured. Please add a valid GEMINI_API_KEY to backend/.env.'
+        await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=fallback)
+        return ChatOut(session_id=session_id, response=fallback, timestamp=datetime.utcnow())
+
     try:
         safety = [
             genai_types.SafetySetting(category=genai_types.HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=genai_types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE),
@@ -213,14 +262,15 @@ async def chat(body: ChatBody, user=Depends(get_user_from_token)):
             )
         )
         text = getattr(result, 'text', None) or 'I could not generate a response. Please try again.'
+        await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=text)
         return ChatOut(session_id=session_id, response=text, timestamp=datetime.utcnow())
-    except Exception as e:
-        # Graceful fallback
-        return ChatOut(session_id=session_id, response='I am experiencing technical difficulties. Please try again shortly.', timestamp=datetime.utcnow())
+    except Exception:
+        err = 'I am experiencing technical difficulties. Please try again shortly.'
+        await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=err)
+        return ChatOut(session_id=session_id, response=err, timestamp=datetime.utcnow())
 
 @app.post('/api/ai/recommendations')
 async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
-    # Use a deterministic prompt
     prompt = (
         "Generate concise travel recommendations as bullet points based on these preferences: "
         + json.dumps(prefs.model_dump(exclude_none=True))
@@ -238,7 +288,6 @@ async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
             )
         )
         text = getattr(result, 'text', '')
-        # Simple parse into list lines
         lines = [l.strip('- ').strip() for l in text.split('\n') if l.strip()]
         return {'recommendations': lines[:10]}
     except Exception:

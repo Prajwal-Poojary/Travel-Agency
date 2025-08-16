@@ -38,8 +38,6 @@ api.interceptors.response.use(
       // Unauthorized - clear token and redirect to login
       localStorage.removeItem('token');
       delete api.defaults.headers.common['Authorization'];
-      
-      // Only show toast if not already on login page
       if (!window.location.pathname.includes('/login')) {
         toast.error('Session expired. Please login again.');
       }
@@ -52,7 +50,6 @@ api.interceptors.response.use(
     } else if (!error.response) {
       toast.error('Network error. Please check your connection.');
     }
-    
     return Promise.reject(error);
   }
 );
@@ -144,8 +141,20 @@ export const apiService = {
     const response = await api.post('/api/ai/recommendations', preferences);
     return response.data;
   },
-  chatWithAI: async (message) => {
-    const response = await api.post('/api/chat', message);
+  chatWithAI: async (payload) => {
+    const response = await api.post('/api/chat', payload);
+    return response.data;
+  },
+  getChatSession: async (sessionId) => {
+    const response = await api.get(`/api/chat/sessions/${sessionId}`);
+    return response.data;
+  },
+  deleteChatSession: async (sessionId) => {
+    const response = await api.delete(`/api/chat/sessions/${sessionId}`);
+    return response.data;
+  },
+  listChatSessions: async () => {
+    const response = await api.get('/api/chat/sessions');
     return response.data;
   },
 
