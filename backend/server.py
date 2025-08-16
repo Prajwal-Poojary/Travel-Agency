@@ -46,7 +46,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # ---- DB ----
 client: AsyncIOMotorClient = AsyncIOMotorClient(MONGO_URL)
 db_name_match = re.search(r"/([^/?]+)(?:\?|$)", MONGO_URL)
-DB_NAME = client.options.get('dbName') or (db_name_match.group(1) if db_name_match else None)
+DB_NAME = getattr(client, 'options', None).dbName if getattr(client, 'options', None) and hasattr(client.options, 'dbName') else (db_name_match.group(1) if db_name_match else None)
 if not DB_NAME:
     raise RuntimeError('Database name not found in MONGO_URL')
 db = client[DB_NAME]
