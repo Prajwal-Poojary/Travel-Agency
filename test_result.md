@@ -1,33 +1,38 @@
 # Advanced Travel Platform - FastAPI Backend Version
 
-## 🔄 LATEST UPDATE: August 15, 2025 (Patch 4)
+## 🔄 LATEST UPDATE: August 16, 2025 (Patch 5) - Virtual Tours & AI Chat Regression
 
 - BACKEND REGRESSION TESTING COMPLETED ✅ (100% SUCCESS RATE)
-  - All 7 critical authentication and protected endpoint tests PASSED
+  - All 10 critical Virtual Tours and AI Chat tests PASSED as per review request
   - POST /api/auth/login with demo@example.com/password123 → 200 + access_token ✅
   - GET /api/auth/profile with Bearer token → 200 + username: demo_user ✅
-  - POST /api/chat with Bearer token {message:"hi"} → 200 + session_id + response ✅
   - POST /api/chat without token → 401 Unauthorized ✅
+  - POST /api/chat with token {message:"hi"} → 200 + session_id + response ✅
+  - GET /api/virtual-tours → 200 + array with 2 tours, all required fields (tour_id, name, video_url, thumbnail, duration) ✅
+  - GET /api/virtual-tours/featured?limit=6 → 200 + array with 2 featured tours (within 1-6 range) ✅
+  - GET /api/virtual-tours/types → 200 + array with 2 tour types {type, count, label} ✅
+  - GET /api/virtual-tours/countries → 200 + array with 2 countries as strings ✅
   - GET /api/destinations → 200 + array with 8 destinations ✅
-  - GET /api/destinations/countries → 200 + array with 8 countries ✅
-  - GET /api/destinations/activities → 200 + array with 35 activities ✅
   - GET /api/health → 200 + status: healthy ✅
 
-- JWT Authentication System Fully Validated:
-  - No 401 Invalid token errors on profile/chat with same token from login
-  - JWT secret properly configured from environment variable
-  - All backend routes correctly include /api prefix
-  - Token consistency maintained across all protected endpoints
+- Virtual Tours API Endpoints Fully Validated:
+  - All virtual tours endpoints returning proper data structures
+  - Featured tours endpoint correctly limiting results (2 tours within 1-6 range)
+  - Tour types endpoint providing required fields: type, count, label
+  - Countries endpoint returning array of strings as expected
+  - All tour objects contain required fields: tour_id, name, video_url, thumbnail, duration
+
+- AI Chat System Fully Operational:
+  - Authentication properly enforced (401 without token)
+  - Authenticated chat returning session_id and response string
+  - JWT token consistency maintained across all protected endpoints
+  - Demo user authentication working correctly
 
 - FastAPI Backend Confirmed Live and Operational:
   - Backend correctly identified as FastAPI (Python), not Node.js
   - All endpoints running on 0.0.0.0:8001 internally, mapped to external URL
   - All API routes properly prefixed with /api for Kubernetes ingress compatibility
-
-- Previous fixes confirmed working:
-  - Fixed token validation bug (pymongo Database truthiness check)
-  - Replaced `if db` with `if db is not None` in auth dependency
-  - All protected endpoints (`GET /api/auth/profile`, `POST /api/chat`) working correctly
+  - MongoDB Atlas integration working correctly with seeded data
 
 ## ✅ SERVICES STATUS
 - Backend (FastAPI): Running on port 8001 ✅
@@ -37,18 +42,24 @@
 ## ▶️ QUICK VERIFICATION COMMANDS
 ```bash
 # 1) Login
-TOKEN=$(curl -s -X POST http://127.0.0.1:8001/api/auth/login \
+TOKEN=$(curl -s -X POST https://react-debug-portal.preview.emergentagent.com/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"demo@example.com","password":"password123"}' | jq -r .access_token)
 
 # 2) Profile with token (should return 200 + user)
-curl -s http://127.0.0.1:8001/api/auth/profile -H "Authorization: Bearer $TOKEN"
+curl -s https://react-debug-portal.preview.emergentagent.com/api/auth/profile -H "Authorization: Bearer $TOKEN"
 
 # 3) Authenticated chat
-curl -s -X POST http://127.0.0.1:8001/api/chat \
+curl -s -X POST https://react-debug-portal.preview.emergentagent.com/api/chat \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"message":"Hello"}'
+
+# 4) Virtual tours
+curl -s https://react-debug-portal.preview.emergentagent.com/api/virtual-tours
+
+# 5) Featured virtual tours
+curl -s "https://react-debug-portal.preview.emergentagent.com/api/virtual-tours/featured?limit=6"
 ```
 
 ---
