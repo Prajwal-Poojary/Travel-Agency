@@ -33,7 +33,7 @@ if not MONGO_URL:
     raise RuntimeError('MONGO_URL is required in backend/.env')
 
 # ---- App ----
-app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.2.0')
+app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.3.0')
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS if CORS_ORIGINS else ["*"],
@@ -99,6 +99,12 @@ class RecReq(BaseModel):
     group_size: Optional[int] = None
     interests: Optional[List[str]] = None
 
+class NarrationReq(BaseModel):
+    voice_style: Optional[str] = Field(default='friendly', description='Narration style')
+    pace: Optional[str] = Field(default='medium', description='slow/medium/fast')
+    duration_hint: Optional[str] = Field(default='short', description='short/medium/long')
+    language: Optional[str] = Field(default='en', description='Language code')
+
 # ---- Utils ----
 ALG = 'HS256'
 
@@ -134,6 +140,10 @@ async def ensure_indexes_and_seed():
     # Chat sessions
     await db.chat_sessions.create_index('session_id', unique=True)
     await db.chat_sessions.create_index('user_id')
+
+    # Favorites
+    await db.favorites.create_index([('user_id', 1), ('tour_id', 1)], unique=True)
+    await db.favorites.create_index('user_id')
 
     # Virtual tours
     await db.virtual_tours.create_index('tour_id', unique=True)
@@ -421,7 +431,7 @@ async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
     except Exception:
         return {'recommendations': ['Unable to generate recommendations at this time. Please try again later.']}
 
-# ---- Virtual Tours API (Public GET endpoints) ----
+# ---- Virtual Tours API ----
 @app.get('/api/virtual-tours')
 async def get_virtual_tours(
     search: Optional[str] = Query(None),
@@ -488,6 +498,78 @@ async def get_virtual_tour(tour_id: str):
     if not tour:
         raise HTTPException(status_code=404, detail='Virtual tour not found')
     return tour
+
+# ---- Favorites (auth required) ----
+@app.get('/api/virtual-tours/favorites')
+async def list_favorites(user=Depends(get_user_from_token)):
+    fav_cursor = db.favorites.find({'user_id': user['user_id']})
+    fav_ids = []
+    async for f in fav_cursor:
+        fav_ids.append(f['tour_id'])
+    if not fav_ids:
+        return {'items': []}
+    cursor = db.virtual_tours.find({'tour_id': {'$in': fav_ids}})
+    items = []
+    async for t in cursor:
+        items.append(t)
+    return {'items': items}
+
+@app.post('/api/virtual-tours/{tour_id}/favorite')
+async def favorite_tour(tour_id: str, user=Depends(get_user_from_token)):
+    tour = await db.virtual_tours.find_one({'tour_id': tour_id})
+    if not tour:
+        raise HTTPException(status_code=404, detail='Virtual tour not found')
+    try:
+        await db.favorites.update_one(
+            {'user_id': user['user_id'], 'tour_id': tour_id},
+            {'$setOnInsert': {'created_at': datetime.utcnow().isoformat()}},
+            upsert=True
+        )
+        return {'message': 'Favorited', 'tour_id': tour_id}
+    except Exception:
+        return {'message': 'Favorited', 'tour_id': tour_id}
+
+@app.delete('/api/virtual-tours/{tour_id}/favorite')
+async def unfavorite_tour(tour_id: str, user=Depends(get_user_from_token)):
+    await db.favorites.delete_one({'user_id': user['user_id'], 'tour_id': tour_id})
+    return {'message': 'Unfavorited', 'tour_id': tour_id}
+
+# ---- AI Narration for a tour (auth required) ----
+@app.post('/api/virtual-tours/{tour_id}/narrate')
+async def narrate_tour(tour_id: str, req: NarrationReq, user=Depends(get_user_from_token)):
+    tour = await db.virtual_tours.find_one({'tour_id': tour_id})
+    if not tour:
+        raise HTTPException(status_code=404, detail='Virtual tour not found')
+
+    prompt = (
+        f"Create a {req.duration_hint} narration in {req.language} with a {req.voice_style} tone and {req.pace} pace for this 360° virtual tour. "
+        f"Keep it engaging and travel-guide-like. Include 2-4 highlights if available, and paint a vivid picture for listeners.\n\n"
+        f"Tour Name: {tour.get('name')}\n"
+        f"Country: {tour.get('country')}\n"
+        f"Duration: {tour.get('duration')}\n"
+        f"Type: {tour.get('tour_type')}\n"
+        f"Description: {tour.get('description')}\n"
+        f"Features: {', '.join(tour.get('features', []))}\n"
+        f"Highlights: {json.dumps(tour.get('highlights', []))}\n"
+    )
+
+    if not gemini_client:
+        return {'narration': 'AI service is not configured. Please add GEMINI_API_KEY to backend/.env.'}
+
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: gemini_client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(max_output_tokens=500, temperature=0.6)
+            )
+        )
+        narration = getattr(result, 'text', '') or 'Unable to generate narration at this time.'
+        return {'narration': narration}
+    except Exception:
+        return {'narration': 'We are experiencing technical difficulties generating narration. Please try again later.'}
 
 # ---- Run (handled by supervisor) ----
 # Do not add uvicorn.run here.

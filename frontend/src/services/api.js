@@ -179,6 +179,22 @@ export const apiService = {
     const response = await api.get('/api/virtual-tours/countries');
     return response.data;
   },
+  listFavoriteVirtualTours: async () => {
+    const response = await api.get('/api/virtual-tours/favorites');
+    return response.data;
+  },
+  favoriteVirtualTour: async (tourId) => {
+    const response = await api.post(`/api/virtual-tours/${tourId}/favorite`);
+    return response.data;
+  },
+  unfavoriteVirtualTour: async (tourId) => {
+    const response = await api.delete(`/api/virtual-tours/${tourId}/favorite`);
+    return response.data;
+  },
+  narrateVirtualTour: async (tourId, options = {}) => {
+    const response = await api.post(`/api/virtual-tours/${tourId}/narrate`, options);
+    return response.data;
+  },
 
   // Health check
   healthCheck: async () => {
