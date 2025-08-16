@@ -360,7 +360,7 @@ def get_chat_session(session_id: str, user=Depends(get_current_user)):
 
 # Virtual Tours (public)
 @app.get('/api/virtual-tours')
-def get_virtual_tours(search: Optional[str] = None, country: Optional[str] = None, tour_type: Optional[str] = None, featured_only: Optional[bool] = None, limit: int = 50, skip: int = 0):
+def get_virtual_tours(search: Optional[str] = None, country: Optional[str] = None, tour_type: Optional[str] = None, featured_only: Optional[bool] = None, limit: int = 50, skip: int = 0, response: Response = None):
     limit = max(1, min(limit, 100))
     skip = max(0, skip)
     query = {'active': True}
