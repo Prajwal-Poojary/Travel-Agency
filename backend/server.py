@@ -26,18 +26,19 @@ if not MONGO_URL:
 
 # --- Database setup ---
 client = MongoClient(MONGO_URL, maxPoolSize=10)
-# Derive DB name from URL when not explicitly provided by driver
-_db_name = client.options.db_name
-if not _db_name:
-    # Fallback parsing last path segment
+# Use default database from URI (works when DB name is included)
+try:
+    db = client.get_default_database()
+except Exception:
+    # Fallback parse last path segment
+    _db_name = None
     try:
         _db_name = MONGO_URL.split('/')[-1].split('?')[0]
     except Exception:
-        _db_name = None
-if not _db_name:
-    raise RuntimeError('Could not determine database name from MONGO_URL')
-
-db = client[_db_name]
+        pass
+    if not _db_name:
+        raise RuntimeError('Could not determine database name from MONGO_URL')
+    db = client[_db_name]
 
 # Ensure indexes & seed data
 
