@@ -228,7 +228,8 @@ async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
     if not gemini_client:
         return {'recommendations': ['Enable GEMINI_API_KEY to get AI recommendations.']}
     try:
-        result = await app.loop.run_in_executor(
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
             None,
             lambda: gemini_client.models.generate_content(
                 model='gemini-2.0-flash',
