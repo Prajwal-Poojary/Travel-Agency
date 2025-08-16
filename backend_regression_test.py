@@ -214,9 +214,131 @@ class RegressionTester:
             self.log_result("Destinations Public", False, f"HTTP {response.status_code}", response.text)
             return False
 
-    def test_6_health_check(self):
-        """Test 6: GET /api/health -> 200"""
-        print("🔍 Test 6: Health check...")
+    def test_6_virtual_tours(self):
+        """Test 6: GET /api/virtual-tours -> 200 array with required fields"""
+        print("🔍 Test 6: Get virtual tours...")
+        
+        response = self.make_request("GET", "/virtual-tours")
+        
+        if response is None:
+            self.log_result("Virtual Tours", False, "Request failed", "Connection error")
+            return False
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list) and len(data) >= 1:
+                    # Check required fields in first tour
+                    tour = data[0]
+                    required_fields = ['tour_id', 'name', 'video_url', 'thumbnail', 'duration']
+                    missing_fields = [field for field in required_fields if field not in tour]
+                    
+                    if not missing_fields:
+                        self.log_result("Virtual Tours", True, f"Retrieved {len(data)} tours with required fields")
+                        return True
+                    else:
+                        self.log_result("Virtual Tours", False, f"Missing required fields: {missing_fields}", str(tour))
+                        return False
+                else:
+                    self.log_result("Virtual Tours", False, f"Expected array with length >= 1, got length: {len(data) if isinstance(data, list) else 'not array'}", str(data))
+                    return False
+            except json.JSONDecodeError:
+                self.log_result("Virtual Tours", False, "Invalid JSON response", response.text)
+                return False
+        else:
+            self.log_result("Virtual Tours", False, f"HTTP {response.status_code}", response.text)
+            return False
+
+    def test_7_virtual_tours_featured(self):
+        """Test 7: GET /api/virtual-tours/featured?limit=6 -> 200 array length 1-6"""
+        print("🔍 Test 7: Get featured virtual tours...")
+        
+        response = self.make_request("GET", "/virtual-tours/featured?limit=6")
+        
+        if response is None:
+            self.log_result("Virtual Tours Featured", False, "Request failed", "Connection error")
+            return False
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list) and 1 <= len(data) <= 6:
+                    self.log_result("Virtual Tours Featured", True, f"Retrieved {len(data)} featured tours (within 1-6 range)")
+                    return True
+                else:
+                    self.log_result("Virtual Tours Featured", False, f"Expected array with length 1-6, got length: {len(data) if isinstance(data, list) else 'not array'}", str(data))
+                    return False
+            except json.JSONDecodeError:
+                self.log_result("Virtual Tours Featured", False, "Invalid JSON response", response.text)
+                return False
+        else:
+            self.log_result("Virtual Tours Featured", False, f"HTTP {response.status_code}", response.text)
+            return False
+
+    def test_8_virtual_tours_types(self):
+        """Test 8: GET /api/virtual-tours/types -> 200 array of {type, count, label}"""
+        print("🔍 Test 8: Get virtual tour types...")
+        
+        response = self.make_request("GET", "/virtual-tours/types")
+        
+        if response is None:
+            self.log_result("Virtual Tours Types", False, "Request failed", "Connection error")
+            return False
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    # Check if objects have required fields
+                    type_obj = data[0]
+                    required_fields = ['type', 'count', 'label']
+                    missing_fields = [field for field in required_fields if field not in type_obj]
+                    
+                    if not missing_fields:
+                        self.log_result("Virtual Tours Types", True, f"Retrieved {len(data)} tour types with required fields")
+                        return True
+                    else:
+                        self.log_result("Virtual Tours Types", False, f"Missing required fields: {missing_fields}", str(type_obj))
+                        return False
+                else:
+                    self.log_result("Virtual Tours Types", False, f"Expected non-empty array, got: {data}", str(data))
+                    return False
+            except json.JSONDecodeError:
+                self.log_result("Virtual Tours Types", False, "Invalid JSON response", response.text)
+                return False
+        else:
+            self.log_result("Virtual Tours Types", False, f"HTTP {response.status_code}", response.text)
+            return False
+
+    def test_9_virtual_tours_countries(self):
+        """Test 9: GET /api/virtual-tours/countries -> 200 array of strings"""
+        print("🔍 Test 9: Get virtual tour countries...")
+        
+        response = self.make_request("GET", "/virtual-tours/countries")
+        
+        if response is None:
+            self.log_result("Virtual Tours Countries", False, "Request failed", "Connection error")
+            return False
+        
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                if isinstance(data, list) and all(isinstance(item, str) for item in data):
+                    self.log_result("Virtual Tours Countries", True, f"Retrieved {len(data)} countries as strings")
+                    return True
+                else:
+                    self.log_result("Virtual Tours Countries", False, "Expected array of strings", str(data))
+                    return False
+            except json.JSONDecodeError:
+                self.log_result("Virtual Tours Countries", False, "Invalid JSON response", response.text)
+                return False
+        else:
+            self.log_result("Virtual Tours Countries", False, f"HTTP {response.status_code}", response.text)
+            return False
+
+    def test_10_health_check(self):
+        """Test 10: GET /api/health -> 200 with {status: 'healthy'}"""
+        print("🔍 Test 10: Health check...")
         
         response = self.make_request("GET", "/health")
         
@@ -227,11 +349,15 @@ class RegressionTester:
         if response.status_code == 200:
             try:
                 data = response.json()
-                self.log_result("Health Check", True, f"Health check passed: {data.get('status', 'OK')}")
-                return True
+                if "status" in data and data["status"] == "healthy":
+                    self.log_result("Health Check", True, f"Health check passed: {data['status']}")
+                    return True
+                else:
+                    self.log_result("Health Check", False, f"Expected status: 'healthy', got: {data.get('status')}", str(data))
+                    return False
             except json.JSONDecodeError:
-                self.log_result("Health Check", True, "Health check passed (non-JSON response)")
-                return True
+                self.log_result("Health Check", False, "Invalid JSON response", response.text)
+                return False
         else:
             self.log_result("Health Check", False, f"HTTP {response.status_code}", response.text)
             return False
