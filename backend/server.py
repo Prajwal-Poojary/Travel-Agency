@@ -365,13 +365,17 @@ def get_virtual_tours(search: Optional[str] = None, country: Optional[str] = Non
     skip = max(0, skip)
     query = {'active': True}
     if search:
-        query['$or'] = [
-            {'name': {'$regex': search, '$options': 'i'}},
-            {'description': {'$regex': search, '$options': 'i'}},
-            {'city': {'$regex': search, '$options': 'i'}},
-            {'country': {'$regex': search, '$options': 'i'}},
-            {'tags': {'$in': [search]}}
-        ]
+        # Prefer text search when index exists
+        try:
+            query['$text'] = {'$search': search}
+        except Exception:
+            query['$or'] = [
+                {'name': {'$regex': search, '$options': 'i'}},
+                {'description': {'$regex': search, '$options': 'i'}},
+                {'city': {'$regex': search, '$options': 'i'}},
+                {'country': {'$regex': search, '$options': 'i'}},
+                {'tags': {'$in': [search]}}
+            ]
     if country:
         query['country'] = {'$regex': country, '$options': 'i'}
     if tour_type:
