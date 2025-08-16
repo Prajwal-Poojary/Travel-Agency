@@ -62,6 +62,16 @@ async function ensureIndexesAndSeed() {
   await db.collection('users').createIndex({ email: 1 }, { unique: true });
   await db.collection('users').createIndex({ username: 1 }, { unique: true });
   await db.collection('destinations').createIndex({ destination_id: 1 }, { unique: true });
+  
+  // Virtual Tours indexes
+  await db.collection('virtual_tours').createIndex({ tour_id: 1 }, { unique: true });
+  await db.collection('virtual_tours').createIndex({ tour_type: 1 });
+  await db.collection('virtual_tours').createIndex({ featured: 1 });
+  await db.collection('virtual_tours').createIndex({ active: 1 });
+  await db.collection('virtual_tours').createIndex(
+    { name: 'text', description: 'text', city: 'text', country: 'text', tags: 'text' },
+    { name: 'vt_text_idx' }
+  );
 
   // Seed demo user
   const demo = await db.collection('users').findOne({ email: 'demo@example.com' });
@@ -116,6 +126,71 @@ async function ensureIndexesAndSeed() {
         images: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80'],
         coordinates: { latitude: 36.3932, longitude: 25.4615 },
         rating: 4.5, featured: true, created_at: new Date(),
+      }
+    ]);
+  }
+
+  // Seed virtual tours if empty
+  const tourCount = await db.collection('virtual_tours').countDocuments();
+  if (tourCount === 0) {
+    const commonFeatures = ['360° View', 'Audio Guide', 'Landmarks', 'Cultural Insights'];
+    await db.collection('virtual_tours').insertMany([
+      {
+        tour_id: uuidv4(),
+        name: 'Tokyo 360° City Tour',
+        description: 'Explore the bustling streets of Tokyo in an immersive 360° experience.',
+        country: 'Japan',
+        city: 'Tokyo',
+        tour_type: '360_video',
+        video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        thumbnail: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80',
+        duration: '5:00',
+        featured: true,
+        views: 0,
+        rating: 4.7,
+        features: commonFeatures,
+        highlights: [
+          { time: '0:30', title: 'Shibuya Crossing', description: 'World-famous pedestrian scramble.' },
+          { time: '2:10', title: 'Tokyo Tower Views', description: 'Panoramic skyline vistas.' }
+        ],
+        interactive_elements: [
+          { time: '1:20', type: 'hotspot', info: 'Tap to learn about Shinto shrines' }
+        ],
+        coordinates: { latitude: 35.6762, longitude: 139.6503 },
+        destination_id: null,
+        tags: ['city', 'asia', 'nightlife'],
+        language: 'English',
+        created_at: new Date(),
+        updated_at: new Date(),
+        active: true
+      },
+      {
+        tour_id: uuidv4(),
+        name: 'Santorini Cliffside Walk',
+        description: 'Stroll through Oia with breathtaking caldera views in 360°.',
+        country: 'Greece',
+        city: 'Oia',
+        tour_type: 'interactive_360',
+        video_url: 'https://www.youtube.com/watch?v=oHg5SJYRHA0',
+        thumbnail: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',
+        duration: '6:30',
+        featured: true,
+        views: 0,
+        rating: 4.6,
+        features: commonFeatures,
+        highlights: [
+          { time: '1:00', title: 'Blue Domes', description: 'Iconic architecture.' }
+        ],
+        interactive_elements: [
+          { time: '2:30', type: 'navigation', info: 'Jump to Amoudi Bay' }
+        ],
+        coordinates: { latitude: 36.3932, longitude: 25.4615 },
+        destination_id: null,
+        tags: ['island', 'europe', 'sunset'],
+        language: 'English',
+        created_at: new Date(),
+        updated_at: new Date(),
+        active: true
       }
     ]);
   }
@@ -260,6 +335,112 @@ app.get('/api/chat/sessions/:session_id', authMiddleware, async (req, res) => {
 
 app.delete('/api/chat/sessions/:session_id', authMiddleware, async (req, res) => {
   res.json({ message: `Chat session ${req.params.session_id} deleted successfully` });
+});
+
+// Virtual Tours (public)
+app.get('/api/virtual-tours', async (req, res) => {
+  try {
+    const { search, country, tour_type, featured_only, limit, skip } = req.query;
+    const limitNum = Math.min(Math.max(parseInt(limit || '50', 10), 1), 100);
+    const skipNum = Math.max(parseInt(skip || '0', 10), 0);
+    
+    const query = { active: true };
+    
+    if (search) {
+      try {
+        query.$text = { $search: String(search) };
+      } catch (e) {
+        query.$or = [
+          { name: { $regex: String(search), $options: 'i' } },
+          { description: { $regex: String(search), $options: 'i' } },
+          { city: { $regex: String(search), $options: 'i' } },
+          { country: { $regex: String(search), $options: 'i' } },
+          { tags: { $in: [String(search)] } }
+        ];
+      }
+    }
+    
+    if (country) query.country = { $regex: String(country), $options: 'i' };
+    if (tour_type) query.tour_type = String(tour_type);
+    if (featured_only === 'true' || featured_only === true) query.featured = true;
+    
+    const docs = await db.collection('virtual_tours')
+      .find(query)
+      .sort({ featured: -1, views: -1, created_at: -1 })
+      .skip(skipNum)
+      .limit(limitNum)
+      .toArray();
+    
+    docs.forEach(d => { d.tour_id = d.tour_id || String(d._id); });
+    res.json(docs);
+  } catch (e) {
+    res.status(500).json({ detail: 'Server error' });
+  }
+});
+
+app.get('/api/virtual-tours/featured', async (req, res) => {
+  try {
+    const { limit } = req.query;
+    const limitNum = Math.min(Math.max(parseInt(limit || '6', 10), 1), 20);
+    
+    const docs = await db.collection('virtual_tours')
+      .find({ featured: true, active: true })
+      .sort({ views: -1, created_at: -1 })
+      .limit(limitNum)
+      .toArray();
+    
+    docs.forEach(d => { d.tour_id = d.tour_id || String(d._id); });
+    res.json(docs);
+  } catch (e) {
+    res.status(500).json({ detail: 'Server error' });
+  }
+});
+
+app.get('/api/virtual-tours/types', async (req, res) => {
+  try {
+    const pipeline = [
+      { $match: { active: true } },
+      { $group: { _id: '$tour_type', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ];
+    
+    const types = await db.collection('virtual_tours').aggregate(pipeline).toArray();
+    const result = types.map(t => ({
+      type: t._id,
+      count: t.count,
+      label: (t._id || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    }));
+    
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ detail: 'Server error' });
+  }
+});
+
+app.get('/api/virtual-tours/countries', async (req, res) => {
+  try {
+    const countries = await db.collection('virtual_tours').distinct('country', { active: true });
+    res.json(countries);
+  } catch (e) {
+    res.status(500).json({ detail: 'Server error' });
+  }
+});
+
+app.get('/api/virtual-tours/:tour_id', async (req, res) => {
+  try {
+    const { tour_id } = req.params;
+    const doc = await db.collection('virtual_tours').findOne({ tour_id, active: true });
+    
+    if (!doc) return res.status(404).json({ detail: 'Virtual tour not found' });
+    
+    // Increment views
+    await db.collection('virtual_tours').updateOne({ tour_id }, { $inc: { views: 1 } });
+    
+    doc.tour_id = doc.tour_id || String(doc._id);
+    res.json(doc);
+  } catch (e) {
+    res.status(500).json({ detail: 'Server error' });
+  }
 });
 
 // ---- Startup ----
