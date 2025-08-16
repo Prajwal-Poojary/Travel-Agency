@@ -12,6 +12,7 @@ A comprehensive travel platform built with modern web technologies featuring vir
 - **Node.js** with Express.js framework
 - **MongoDB Atlas** (Cloud Database)
 - **JWT Authentication** for secure user management
+- **Google Gemini AI** for intelligent chat assistance
 - **bcryptjs** for password hashing
 - **uuid** for unique identifiers
 
@@ -40,10 +41,12 @@ A comprehensive travel platform built with modern web technologies featuring vir
 - Review and rating system
 
 ### 🤖 AI Integration
-- **AI Chat Assistant** for travel recommendations
+- **Google Gemini AI** powered chat assistant
+- Intelligent travel recommendations and planning
 - Context-aware conversation handling
 - Multi-turn conversation support
-- Session management
+- Session management with database storage
+- Travel-focused responses and advice
 
 ### 🎥 Virtual Tours
 - Immersive 360° destination experiences
@@ -67,6 +70,7 @@ The platform uses MongoDB Atlas with the following collections:
 - **Users**: User accounts with authentication
 - **Destinations**: Travel destinations with details, images, coordinates
 - **Virtual Tours**: Virtual tour experiences with video URLs and metadata
+- **Chat Sessions**: AI conversation history and session management
 
 ## 🚀 QUICK START
 
@@ -87,6 +91,7 @@ Create `.env` files in both backend and frontend directories:
 ```env
 MONGO_URL=your-mongodb-connection-string
 JWT_SECRET_KEY=your-super-secret-jwt-key
+GEMINI_API_KEY=your-gemini-api-key-here
 CORS_ORIGINS=http://localhost:3000
 ```
 
@@ -220,11 +225,12 @@ Travel-Agency/
 - Featured tours section
 
 ### ✅ AI Assistant
-- AI chat integration
-- Context-aware conversations
-- Travel recommendation engine
-- Session management
-- Protected chat endpoints
+- **Google Gemini AI** integration with intelligent responses
+- Context-aware conversations with travel focus
+- Travel recommendation engine and planning assistance
+- Session management with database storage
+- Protected chat endpoints with error handling
+- Real-time AI responses for travel queries
 
 ### ✅ Modern UI/UX
 - Glassmorphism design with translucent elements
@@ -241,6 +247,7 @@ Travel-Agency/
 **Frontend**: Modern React with beautiful UI/UX
 **Database**: MongoDB Atlas with sample data
 **Authentication**: Complete JWT-based system
+**AI Chat**: Google Gemini AI integration with intelligent responses
 **Virtual Tours**: Fully functional with video integration
 
 ## 🎉 READY TO USE!
@@ -249,17 +256,19 @@ Your Advanced Travel Platform is **production-ready** with:
 - ✅ Complete authentication system
 - ✅ Destination management
 - ✅ Virtual tours with video integration
-- ✅ AI-powered chat assistant
+- ✅ **Google Gemini AI** powered chat assistant
 - ✅ Beautiful responsive UI
 - ✅ Comprehensive API coverage
 - ✅ Cloud database integration
 
-Just add your MongoDB connection string and you're ready to launch! 🚀
+Just add your MongoDB connection string and Gemini API key, and you're ready to launch! 🚀
 
 ## 📝 NOTES
 
 - The backend uses a single `server.js` file containing all endpoints for simplicity
 - All authentication is JWT-based with protected routes
+- **Google Gemini AI** provides intelligent travel chat responses
 - Virtual tours support YouTube video integration
 - The frontend uses modern React patterns with hooks and context
 - Tailwind CSS provides the glassmorphism design system
+- Chat sessions are stored in MongoDB for conversation history
