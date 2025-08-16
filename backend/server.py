@@ -33,7 +33,7 @@ if not MONGO_URL:
     raise RuntimeError('MONGO_URL is required in backend/.env')
 
 # ---- App ----
-app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.3.0')
+app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.4.0')
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS if CORS_ORIGINS else ["*"],
@@ -151,6 +151,7 @@ async def ensure_indexes_and_seed():
     await db.virtual_tours.create_index('country')
     await db.virtual_tours.create_index('tour_type')
     await db.virtual_tours.create_index('featured')
+    await db.virtual_tours.create_index('views')
 
     # Seed demo user
     demo = await db.users.find_one({'email': 'demo@example.com'})
@@ -180,6 +181,7 @@ async def ensure_indexes_and_seed():
                 'description': 'Experience the neon-lit streets of Shinjuku and Shibuya in fully immersive 360°.',
                 'features': ['360° View', 'City Walk', 'Nightlife'],
                 'featured': True,
+                'views': 0,
                 'highlights': [
                     {'time': '00:45', 'title': 'Shinjuku Crossing', 'description': 'Bustling intersection views'},
                     {'time': '05:10', 'title': 'Golden Gai', 'description': 'Cozy alleys and bars'},
@@ -199,6 +201,7 @@ async def ensure_indexes_and_seed():
                 'description': 'A breathtaking aerial 360° tour of Santorini’s blue domes and caldera views.',
                 'features': ['Drone 360', 'Coastline', 'Sunset'],
                 'featured': True,
+                'views': 0,
                 'highlights': [
                     {'time': '01:40', 'title': 'Oia Blue Domes', 'description': 'Iconic rooftops at golden hour'},
                 ],
@@ -214,6 +217,7 @@ async def ensure_indexes_and_seed():
                 'description': 'Explore the ancient citadel with points-of-interest overlays and an audio guide.',
                 'features': ['Interactive', 'Ruins', 'Mountains'],
                 'featured': True,
+                'views': 0,
                 'highlights': [
                     {'time': '03:20', 'title': 'Sun Temple', 'description': 'Stunning stonework and vistas'},
                 ],
@@ -232,6 +236,7 @@ async def ensure_indexes_and_seed():
                 'description': 'A cultural 360° stroll through Louvre courtyards and nearby landmarks.',
                 'features': ['Museums', 'Culture', 'City Walk'],
                 'featured': False,
+                'views': 0,
             },
             {
                 'tour_id': str(uuid4()),
@@ -244,6 +249,7 @@ async def ensure_indexes_and_seed():
                 'description': 'Soar above Milford Sound and dramatic fjords in stunning 360°.',
                 'features': ['Nature', 'Drone 360', 'Mountains'],
                 'featured': False,
+                'views': 0,
             },
             {
                 'tour_id': str(uuid4()),
@@ -256,6 +262,7 @@ async def ensure_indexes_and_seed():
                 'description': 'Interactive 360° with pyramid facts and quick time jumps to key viewpoints.',
                 'features': ['Desert', 'History', 'Interactive'],
                 'featured': False,
+                'views': 0,
             },
             {
                 'tour_id': str(uuid4()),
@@ -268,6 +275,7 @@ async def ensure_indexes_and_seed():
                 'description': 'Walk through lush emerald terraces and jungle sounds in 360°.',
                 'features': ['Nature', '360° View', 'Culture'],
                 'featured': False,
+                'views': 0,
             },
             {
                 'tour_id': str(uuid4()),
@@ -280,6 +288,7 @@ async def ensure_indexes_and_seed():
                 'description': 'Iconic skyline views from a Midtown rooftop in 360°.',
                 'features': ['City', 'Skyline', '360° View'],
                 'featured': False,
+                'views': 0,
             },
         ]
         await db.virtual_tours.insert_many(seed)
@@ -453,7 +462,7 @@ async def get_virtual_tours(
         filters['country'] = country
 
     skip = max(0, (page - 1) * limit)
-    cursor = db.virtual_tours.find(filters).sort('featured', -1).skip(skip).limit(limit)
+    cursor = db.virtual_tours.find(filters).sort([('featured', -1), ('views', -1)]).skip(skip).limit(limit)
     results = []
     async for doc in cursor:
         results.append(doc)
@@ -473,6 +482,21 @@ async def get_featured_virtual_tours(limit: int = 6):
     async for doc in cursor:
         results.append(doc)
     return results
+
+@app.get('/api/virtual-tours/trending')
+async def get_trending_virtual_tours(limit: int = 6):
+    cursor = db.virtual_tours.find({}).sort('views', -1).limit(int(limit))
+    results = []
+    async for doc in cursor:
+        results.append(doc)
+    return results
+
+@app.post('/api/virtual-tours/{tour_id}/view')
+async def add_view_virtual_tour(tour_id: str):
+    res = await db.virtual_tours.update_one({'tour_id': tour_id}, {'$inc': {'views': 1}, '$set': {'last_viewed_at': datetime.utcnow().isoformat()}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail='Virtual tour not found')
+    return {'message': 'viewed', 'tour_id': tour_id}
 
 @app.get('/api/virtual-tours/types')
 async def get_virtual_tour_types():

@@ -27,6 +27,7 @@ const Login = React.lazy(() => import('./pages/Auth/Login'));
 const Register = React.lazy(() => import('./pages/Auth/Register'));
 const AIAssistant = React.lazy(() => import('./pages/AIAssistant/EnhancedAIAssistant'));
 const VirtualTours = React.lazy(() => import('./pages/VirtualTours/EnhancedVirtualTours'));
+const FavoritesVirtualTours = React.lazy(() => import('./pages/VirtualTours/FavoritesVirtualTours'));
 const About = React.lazy(() => import('./pages/About/About'));
 const Contact = React.lazy(() => import('./pages/Contact/Contact'));
 
@@ -59,11 +60,9 @@ function App() {
   const [loading, setLoading] = useState(false); // Disable loading for debugging
 
   useEffect(() => {
-    // Simulate initial loading - reduced for debugging
     const timer = setTimeout(() => {
       setLoading(false);
     }, 500);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -80,33 +79,14 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <div className="App relative min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700">
-            {/* Particle Background */}
             <ParticleBackground />
-            
-            {/* Cursor Follower */}
             <CursorFollower />
-            
-            {/* Navigation */}
             <Navbar />
-            
-            {/* Footer should always be visible */}
-            
-            
-            {/* Main Content */}
+
             <main className="relative z-10">
               <AnimatePresence mode="wait">
-                <motion.div
-                  initial="initial"
-                  animate="in"
-                  exit="out"
-                  variants={pageVariants}
-                  transition={pageTransition}
-                >
-                  <Suspense fallback={
-                    <div className="min-h-screen flex items-center justify-center">
-                      <LoadingSpinner size="medium" text="Loading page..." />
-                    </div>
-                  }>
+                <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>
+                  <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><LoadingSpinner size="medium" text="Loading page..." /></div>}>
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/destinations" element={<ProtectedRoute><Destinations /></ProtectedRoute>} />
@@ -117,6 +97,7 @@ function App() {
                       <Route path="/register" element={<Register />} />
                       <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
                       <Route path="/virtual-tours" element={<ProtectedRoute><VirtualTours /></ProtectedRoute>} />
+                      <Route path="/virtual-tours/favorites" element={<ProtectedRoute><FavoritesVirtualTours /></ProtectedRoute>} />
                       <Route path="/about" element={<About />} />
                       <Route path="/contact" element={<Contact />} />
                     </Routes>
@@ -124,42 +105,10 @@ function App() {
                 </motion.div>
               </AnimatePresence>
             </main>
-            
-            {/* Scroll to Top Button */}
-            <ScrollToTop />
 
-            {/* Footer */}
+            <ScrollToTop />
             <Footer />
-            
-            {/* Toast Notifications */}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'rgba(15, 23, 42, 0.95)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#f8fafc',
-                  backdropFilter: 'blur(10px)',
-                  fontSize: '14px',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                },
-                success: {
-                  iconTheme: {
-                    primary: '#00ff88',
-                    secondary: '#0a0a0a',
-                  },
-                },
-                error: {
-                  iconTheme: {
-                    primary: '#ff006e',
-                    secondary: '#0a0a0a',
-                  },
-                },
-              }}
-            />
+            <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#f8fafc', backdropFilter: 'blur(10px)', fontSize: '14px', borderRadius: '12px', padding: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }, }} />
           </div>
         </AuthProvider>
       </ThemeProvider>

@@ -167,6 +167,14 @@ export const apiService = {
     const response = await api.get(`/api/virtual-tours/featured?limit=${limit}`);
     return response.data;
   },
+  getTrendingVirtualTours: async (limit = 6) => {
+    const response = await api.get(`/api/virtual-tours/trending?limit=${limit}`);
+    return response.data;
+  },
+  viewVirtualTour: async (tourId) => {
+    const response = await api.post(`/api/virtual-tours/${tourId}/view`);
+    return response.data;
+  },
   getVirtualTour: async (id) => {
     const response = await api.get(`/api/virtual-tours/${id}`);
     return response.data;
