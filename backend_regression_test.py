@@ -371,14 +371,18 @@ class RegressionTester:
         print(f"API base URL: {API_BASE}")
         print()
 
-        # Run tests in specific order
+        # Run tests in specific order as per review request
         test_results = []
         test_results.append(self.test_1_login_demo_user())
         test_results.append(self.test_2_profile_with_token())
-        test_results.append(self.test_3_chat_with_token())
         test_results.append(self.test_4_chat_without_token())
+        test_results.append(self.test_3_chat_with_token())
+        test_results.append(self.test_6_virtual_tours())
+        test_results.append(self.test_7_virtual_tours_featured())
+        test_results.append(self.test_8_virtual_tours_types())
+        test_results.append(self.test_9_virtual_tours_countries())
         test_results.append(self.test_5_destinations_public())
-        test_results.append(self.test_6_health_check())
+        test_results.append(self.test_10_health_check())
 
         # Print summary
         print("=" * 70)
