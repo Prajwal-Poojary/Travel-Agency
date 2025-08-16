@@ -365,7 +365,7 @@ class RegressionTester:
     def run_regression_tests(self):
         """Run all regression tests in order"""
         print("=" * 70)
-        print("🚀 BACKEND REGRESSION TEST - FastAPI Auth and Protected Endpoints")
+        print("🚀 BACKEND REGRESSION TEST - Virtual Tours & AI Chat Focus")
         print("=" * 70)
         print(f"Testing backend at: {BASE_URL}")
         print(f"API base URL: {API_BASE}")
