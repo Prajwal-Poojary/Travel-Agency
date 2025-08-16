@@ -184,6 +184,35 @@ curl -s "https://react-debug-portal.preview.emergentagent.com/api/virtual-tours/
 
 ## BACKEND TEST HISTORY
 
+### August 16, 2025 - Virtual Tours & AI Chat Regression Testing (Patch 5)
+- **Agent**: testing
+- **Status**: ✅ COMPLETED
+- **Results**: 10/10 regression tests passed (100% success rate)
+- **Test Scope**: Focused Virtual Tours and AI Chat regression testing as per review request
+- **Specific Tests Validated**:
+  1. POST /api/auth/login with demo@example.com/password123 → 200 + access_token ✅
+  2. GET /api/auth/profile with Bearer token → 200 + username: demo_user ✅
+  3. POST /api/chat without token → 401 Unauthorized ✅
+  4. POST /api/chat with token {message:"hi"} → 200 + session_id + response ✅
+  5. GET /api/virtual-tours → 200 + array with 2 tours, all required fields ✅
+  6. GET /api/virtual-tours/featured?limit=6 → 200 + array with 2 featured tours ✅
+  7. GET /api/virtual-tours/types → 200 + array with 2 tour types {type, count, label} ✅
+  8. GET /api/virtual-tours/countries → 200 + array with 2 countries as strings ✅
+  9. GET /api/destinations → 200 + array with 8 destinations ✅
+  10. GET /api/health → 200 + status: healthy ✅
+- **Key Validations**:
+  - All Virtual Tours API endpoints working correctly with proper data structures
+  - AI Chat system fully operational with authentication enforcement
+  - JWT authentication working consistently across all protected endpoints
+  - Demo user authentication working correctly
+  - All endpoints returning expected data formats and field requirements
+- **Technical Notes**:
+  - Backend confirmed as FastAPI (Python) running correctly
+  - All API routes properly prefixed with /api for Kubernetes ingress
+  - MongoDB Atlas integration working with seeded virtual tours and destinations data
+  - External URL configuration working correctly via REACT_APP_BACKEND_URL
+- **Comment**: All Virtual Tours and AI Chat regression requirements from review request successfully validated. Backend is fully operational and ready for production use.
+
 ### August 15, 2025 - UI Sanity Test After Backend Switch
 - **Agent**: testing
 - **Status**: ✅ COMPLETED
