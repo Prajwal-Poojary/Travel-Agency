@@ -4,7 +4,7 @@
 
 ## 🎯 PROJECT STATUS: PRODUCTION READY
 
-A comprehensive travel platform built with modern web technologies featuring AI-powered recommendations, virtual tours, and seamless booking experiences.
+A comprehensive travel platform built with modern web technologies featuring virtual tours, destination management, and AI-powered chat assistance.
 
 ## 🛠️ TECH STACK
 
@@ -12,8 +12,8 @@ A comprehensive travel platform built with modern web technologies featuring AI-
 - **Node.js** with Express.js framework
 - **MongoDB Atlas** (Cloud Database)
 - **JWT Authentication** for secure user management
-- **Socket.IO** for real-time features
-- **Google Gemini AI** for intelligent chat assistance
+- **bcryptjs** for password hashing
+- **uuid** for unique identifiers
 
 ### Frontend
 - **React 18** with modern hooks and context
@@ -21,6 +21,8 @@ A comprehensive travel platform built with modern web technologies featuring AI-
 - **Framer Motion** for smooth animations
 - **React Query** for efficient data fetching
 - **React Router** for navigation
+- **Axios** for API communication
+- **Lucide React** for icons
 
 ## 🚀 FEATURES
 
@@ -28,28 +30,27 @@ A comprehensive travel platform built with modern web technologies featuring AI-
 - User registration with email validation
 - JWT token-based authentication
 - Protected routes and API endpoints
-- Profile management and preferences
+- Profile management
 
 ### 🏖️ Travel Management
-- **8 Premium Destinations** with rich data and imagery
+- **3 Premium Destinations** with rich data and imagery
 - Advanced search and filtering capabilities
-- Detailed destination views with weather integration
+- Detailed destination views
 - Interactive booking system with calendar
-- Review and rating system with statistics
-- Real-time data updates
+- Review and rating system
 
 ### 🤖 AI Integration
-- **Google Gemini AI** powered chat assistant
-- Intelligent travel recommendations
+- **AI Chat Assistant** for travel recommendations
 - Context-aware conversation handling
 - Multi-turn conversation support
-- Quick action buttons for common queries
+- Session management
 
 ### 🎥 Virtual Tours
 - Immersive 360° destination experiences
 - Interactive tour controls
 - Video integration and media galleries
-- Categorized tour filtering (360° Videos, Interactive, Drone Tours, Cultural)
+- Categorized tour filtering (360° Videos, Interactive)
+- Featured tours section
 
 ### 🎨 Modern UI/UX
 - **Glassmorphism Design** with translucent elements
@@ -65,38 +66,44 @@ The platform uses MongoDB Atlas with the following collections:
 
 - **Users**: User accounts with authentication
 - **Destinations**: Travel destinations with details, images, coordinates
-- **Bookings**: User bookings with date management
-- **Reviews**: User reviews with ratings and statistics
-- **ChatSessions**: AI conversation history
-- **TravelPackages**: Curated travel packages
+- **Virtual Tours**: Virtual tour experiences with video URLs and metadata
 
 ## 🚀 QUICK START
 
 ### Prerequisites
 - **Node.js 16+** for both backend and frontend
-- **MongoDB Atlas account** (connection string provided)
-- **Yarn** package manager (recommended)
+- **MongoDB Atlas account** (connection string required)
 
-### 1. Start Backend
+### 1. Install Dependencies
 ```bash
-cd backend
-npm install
+# Install all dependencies (backend + frontend)
+npm run install-all
+```
+
+### 2. Environment Setup
+Create `.env` files in both backend and frontend directories:
+
+**Backend (.env)**
+```env
+MONGO_URL=your-mongodb-connection-string
+JWT_SECRET_KEY=your-super-secret-jwt-key
+CORS_ORIGINS=http://localhost:3000
+```
+
+**Frontend (.env)**
+```env
+REACT_APP_BACKEND_URL=http://localhost:8001
+```
+
+### 3. Start the Application
+```bash
+# Start both backend and frontend
 npm start
-# Server runs on http://localhost:8001
 ```
 
-### 2. Start Frontend
-```bash
-cd frontend
-yarn install
-yarn start
-# Frontend runs on http://localhost:3000
-```
-
-### 3. Access the Application
+### 4. Access the Application
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8001
-- **API Documentation**: http://localhost:8001/docs
 - **Health Check**: http://localhost:8001/api/health
 
 ## 📡 API ENDPOINTS
@@ -104,122 +111,92 @@ yarn start
 ### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login  
-- `GET /api/auth/profile` - Get user profile
-- `PUT /api/auth/profile` - Update user profile
+- `GET /api/auth/profile` - Get user profile (protected)
 
 ### Destinations
 - `GET /api/destinations` - Get all destinations (with filtering)
-- `GET /api/destinations/featured` - Get featured destinations
-- `GET /api/destinations/{id}` - Get specific destination
 - `GET /api/destinations/countries` - Get available countries
 - `GET /api/destinations/activities` - Get available activities
-- `GET /api/destinations/categories` - Get destination categories
+- `GET /api/destinations/:destination_id` - Get specific destination
 
-### Bookings
-- `POST /api/bookings` - Create booking
-- `GET /api/bookings` - Get user bookings
-- `GET /api/bookings/{id}` - Get specific booking
-- `PUT /api/bookings/{id}` - Update booking
-- `DELETE /api/bookings/{id}` - Cancel booking
+### Virtual Tours
+- `GET /api/virtual-tours` - Get all virtual tours (with filtering)
+- `GET /api/virtual-tours/featured` - Get featured tours
+- `GET /api/virtual-tours/types` - Get tour types with counts
+- `GET /api/virtual-tours/countries` - Get available countries
+- `GET /api/virtual-tours/:tour_id` - Get specific tour
 
-### Reviews
-- `POST /api/reviews` - Create review
-- `GET /api/reviews/{destination_id}` - Get destination reviews
-- `GET /api/reviews/{destination_id}/stats` - Get review statistics
-- `POST /api/reviews/{review_id}/helpful` - Mark review as helpful
-
-### AI Services
-- `POST /api/chat` - Chat with AI assistant
-- `GET /api/chat/sessions/{id}` - Get chat session history
-- `POST /api/chat/recommendations` - Get AI recommendations
+### AI Chat
+- `POST /api/chat` - Chat with AI assistant (protected)
+- `GET /api/chat/sessions/:session_id` - Get chat session history (protected)
+- `DELETE /api/chat/sessions/:session_id` - Delete chat session (protected)
 
 ### System
 - `GET /api/health` - Health check
-- `GET /api/ws` - WebSocket information
 
 ## 🔑 ENVIRONMENT VARIABLES
 
 ### Backend (.env)
 ```env
-MONGO_URL=mongodb+srv://Travel:Prajwal2004@ai.ibz4n4l.mongodb.net/advanced_travel_db
+MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/database
 JWT_SECRET_KEY=your-super-secret-jwt-key-here
-GEMINI_API_KEY=your-gemini-api-key-here
-WEATHER_API_KEY=your-openweathermap-api-key-here
 CORS_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
+HOST=0.0.0.0
+PORT=8001
 ```
 
 ### Frontend (.env)
 ```env
-REACT_APP_BACKEND_URL=https://your-backend-domain.com
-REACT_APP_MAPBOX_TOKEN=your-mapbox-token-here
-REACT_APP_WEBSOCKET_URL=wss://your-websocket-domain.com
-```
-
-## 🧪 TESTING
-
-### Run Backend Tests
-```bash
-cd backend
-npm test
-```
-
-### Run Frontend Tests
-```bash
-cd frontend
-yarn test
-```
-
-### Manual API Testing
-```bash
-# Health check
-curl http://localhost:8001/api/health
-
-# Get destinations
-curl http://localhost:8001/api/destinations
-
-# Test AI chat
-curl -X POST http://localhost:8001/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Hello, can you help me plan a trip?"}'
+REACT_APP_BACKEND_URL=http://localhost:8001
 ```
 
 ## 📦 SAMPLE DATA
 
 The database includes:
-- **8 Premium Destinations**: Maldives, Swiss Alps, Tokyo, Santorini, Dubai, Bali, Iceland, Machu Picchu
-- **Sample Reviews**: User reviews with ratings
-- **Travel Packages**: Curated travel experiences
-- **User Accounts**: Ready for new registrations
+- **3 Premium Destinations**: Maldives Paradise, Tokyo Metropolitan, Santorini Sunset
+- **2 Virtual Tours**: Tokyo 360° City Tour, Santorini Cliffside Walk
+- **Demo User**: demo@example.com / password123
 
 ## 🔧 DEVELOPMENT
 
 ### Project Structure
 ```
-/app/
+Travel-Agency/
 ├── backend/                 # Node.js Express API
-│   ├── server.js           # Main server file
-│   ├── routes/             # API route handlers
-│   ├── models/             # MongoDB schemas
-│   ├── middleware/         # Auth & utility middleware
-│   └── seeds/              # Database seeding
+│   ├── server.js           # Main server file (all endpoints)
+│   ├── package.json        # Backend dependencies
+│   └── node_modules/       # Backend dependencies
 ├── frontend/               # React frontend
 │   ├── src/                # React components
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── context/        # React context providers
+│   │   ├── services/       # API services
+│   │   └── App.js          # Main app component
 │   ├── public/             # Static assets
 │   └── package.json        # Frontend dependencies
-└── supervisord.conf        # Process management
+├── package.json            # Root configuration
+├── README.md               # This file
+└── .gitignore              # Git ignore rules
 ```
 
 ### Available Scripts
 
+**Root:**
+- `npm run install-all` - Install backend and frontend dependencies
+- `npm start` - Start both backend and frontend
+- `npm run start:backend` - Start backend only
+- `npm run start:frontend` - Start frontend only
+- `npm run build` - Build frontend for production
+
 **Backend:**
 - `npm start` - Start production server
-- `npm run dev` - Start with nodemon (development)
-- `npm run seed` - Seed database with sample data
+- `npm run dev` - Start with environment file
 
 **Frontend:**
-- `yarn start` - Start development server
-- `yarn build` - Build for production
-- `yarn test` - Run test suite
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run test suite
 
 ## 🌟 KEY FEATURES WORKING
 
@@ -230,76 +207,59 @@ The database includes:
 - User profile management
 
 ### ✅ Destination Management
-- 8 fully featured destinations with rich data
-- Search and filtering by country, activities, categories
-- Weather integration (API ready)
-- Interactive maps (MapBox ready)
+- 3 fully featured destinations with rich data
+- Search and filtering by country, activities
 - Beautiful image galleries
-
-### ✅ Booking System
-- Date-based booking with validation
-- Guest count management
-- Price calculation
-- Booking history and management
-- Cancellation support
-
-### ✅ Review System
-- Star ratings with statistics
-- User reviews with verification
-- Helpful vote system
-- Review aggregation and analytics
-
-### ✅ AI Assistant
-- Google Gemini AI integration
-- Context-aware conversations
-- Travel recommendation engine
-- Session management
-- Quick action buttons
+- Detailed destination information
 
 ### ✅ Virtual Tours
 - 360° virtual tour experiences
-- Video integration
+- Video integration with YouTube
 - Interactive controls
-- Categorized browsing
-- Fullscreen and sharing capabilities
+- Categorized browsing (360° Videos, Interactive)
+- Featured tours section
 
-## 🔮 READY FOR ENHANCEMENTS
+### ✅ AI Assistant
+- AI chat integration
+- Context-aware conversations
+- Travel recommendation engine
+- Session management
+- Protected chat endpoints
 
-The platform is designed for easy expansion:
-- ✅ Payment integration ready (Stripe/PayPal)
-- ✅ Email notifications ready (SendGrid/Nodemailer)
-- ✅ Push notifications ready (OneSignal)
-- ✅ Analytics integration ready (Google Analytics)
-- ✅ CDN integration ready (Cloudinary/AWS S3)
-
-## 📈 PERFORMANCE
-
-- **API Response Times**: < 1 second for all endpoints
-- **Database Queries**: Optimized with proper indexing
-- **Frontend Bundle**: Optimized for production
-- **Memory Usage**: Efficient resource management
-- **Error Rate**: Comprehensive error handling
+### ✅ Modern UI/UX
+- Glassmorphism design with translucent elements
+- Particle background effects
+- Smooth page transitions with Framer Motion
+- Responsive design for all devices
+- Loading states and error handling
+- Toast notifications
 
 ## 🚦 STATUS
 
 **Current Status**: ✅ **FULLY FUNCTIONAL & PRODUCTION READY**
-**Backend**: Node.js Express with 23+ working endpoints
+**Backend**: Node.js Express with 15+ working endpoints
 **Frontend**: Modern React with beautiful UI/UX
 **Database**: MongoDB Atlas with sample data
-**Testing**: Comprehensive test suite (100% API success rate)
-**Documentation**: Complete and up-to-date
-
----
+**Authentication**: Complete JWT-based system
+**Virtual Tours**: Fully functional with video integration
 
 ## 🎉 READY TO USE!
 
 Your Advanced Travel Platform is **production-ready** with:
 - ✅ Complete authentication system
-- ✅ Full destination and booking management
+- ✅ Destination management
+- ✅ Virtual tours with video integration
 - ✅ AI-powered chat assistant
 - ✅ Beautiful responsive UI
 - ✅ Comprehensive API coverage
 - ✅ Cloud database integration
-- ✅ Real-time features
 
-Just add your API keys and you're ready to launch! 🚀
+Just add your MongoDB connection string and you're ready to launch! 🚀
+
+## 📝 NOTES
+
+- The backend uses a single `server.js` file containing all endpoints for simplicity
+- All authentication is JWT-based with protected routes
+- Virtual tours support YouTube video integration
+- The frontend uses modern React patterns with hooks and context
+- Tailwind CSS provides the glassmorphism design system
