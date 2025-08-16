@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,14 +22,11 @@ const Home = React.lazy(() => import('./pages/Home/Home'));
 const Destinations = React.lazy(() => import('./pages/Destinations/Destinations'));
 const DestinationDetail = React.lazy(() => import('./pages/Destinations/DestinationDetail'));
 const Bookings = React.lazy(() => import('./pages/Bookings/EnhancedBookings'));
-const BookingsBasic = React.lazy(() => import('./pages/Bookings/Bookings'));
 const Profile = React.lazy(() => import('./pages/Profile/Profile'));
 const Login = React.lazy(() => import('./pages/Auth/Login'));
 const Register = React.lazy(() => import('./pages/Auth/Register'));
 const AIAssistant = React.lazy(() => import('./pages/AIAssistant/EnhancedAIAssistant'));
-const AIAssistantBasic = React.lazy(() => import('./pages/AIAssistant/AIAssistant'));
 const VirtualTours = React.lazy(() => import('./pages/VirtualTours/EnhancedVirtualTours'));
-const VirtualToursBasic = React.lazy(() => import('./pages/VirtualTours/VirtualTours'));
 const About = React.lazy(() => import('./pages/About/About'));
 const Contact = React.lazy(() => import('./pages/Contact/Contact'));
 
@@ -60,14 +57,11 @@ const pageTransition = {
 
 function App() {
   const [loading, setLoading] = useState(false); // Disable loading for debugging
-  const [mounted, setMounted] = useState(true);
-  const location = useLocation();
 
   useEffect(() => {
     // Simulate initial loading - reduced for debugging
     const timer = setTimeout(() => {
       setLoading(false);
-      setMounted(true);
     }, 500);
 
     return () => clearTimeout(timer);
@@ -102,7 +96,6 @@ function App() {
             <main className="relative z-10">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={location.pathname}
                   initial="initial"
                   animate="in"
                   exit="out"
@@ -119,14 +112,11 @@ function App() {
                       <Route path="/destinations" element={<ProtectedRoute><Destinations /></ProtectedRoute>} />
                       <Route path="/destinations/:id" element={<ProtectedRoute><DestinationDetail /></ProtectedRoute>} />
                       <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
-                      <Route path="/bookings-basic" element={<ProtectedRoute><BookingsBasic /></ProtectedRoute>} />
                       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
-                      <Route path="/ai-assistant-basic" element={<ProtectedRoute><AIAssistantBasic /></ProtectedRoute>} />
                       <Route path="/virtual-tours" element={<ProtectedRoute><VirtualTours /></ProtectedRoute>} />
-                      <Route path="/virtual-tours-basic" element={<ProtectedRoute><VirtualToursBasic /></ProtectedRoute>} />
                       <Route path="/about" element={<About />} />
                       <Route path="/contact" element={<Contact />} />
                     </Routes>
