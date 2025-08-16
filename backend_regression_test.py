@@ -18,7 +18,7 @@ def get_backend_url():
                     return line.split('=', 1)[1].strip()
     except:
         pass
-    return "https://wanderlust-guide-2.preview.emergentagent.com"
+    return "https://react-debug-portal.preview.emergentagent.com"
 
 BASE_URL = get_backend_url()
 API_BASE = f"{BASE_URL}/api"

@@ -219,7 +219,7 @@ curl -s -X POST http://127.0.0.1:8001/api/chat \
 - **Agent**: testing
 - **Status**: ✅ COMPLETED
 - **Results**: 8/8 test scenarios passed (100% success rate)
-- **Test Scope**: Full end-to-end UI validation against https://wanderlust-guide-2.preview.emergentagent.com
+- **Test Scope**: Full end-to-end UI validation against https://react-debug-portal.preview.emergentagent.com
 - **Specific Tests Validated**:
   1. ✅ Public Home Page - Hero headline contains "Advanced Travel Platform", "Login to Explore" CTA visible when unauthenticated
   2. ✅ Login Flow - demo@example.com/password123 login successful, navbar shows authenticated state (Destinations, Virtual Tours, AI Assistant, demo_user chip)
