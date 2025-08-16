@@ -57,6 +57,7 @@ def ensure_indexes_and_seed():
     db.virtual_tours.create_index([('tour_type', ASCENDING)])
     db.virtual_tours.create_index([('featured', ASCENDING)])
     db.virtual_tours.create_index([('active', ASCENDING)])
+    db.virtual_tours.create_index([('name', TEXT), ('description', TEXT), ('city', TEXT), ('country', TEXT), ('tags', TEXT)], name='vt_text_idx')
 
     # Seed demo user
     if db.users.count_documents({'email': 'demo@example.com'}) == 0:
