@@ -12,6 +12,11 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import DuplicateKeyError
 
 # --- Environment variables ---
+# Load .env explicitly to ensure supervisor-provided environment matches file
+from dotenv import load_dotenv
+from os.path import dirname, join
+load_dotenv(join(dirname(__file__), '.env'))
+
 MONGO_URL = os.environ.get('MONGO_URL')
 JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'dev_secret')
 CORS_ORIGINS = [o.strip() for o in (os.environ.get('CORS_ORIGINS') or '').split(',') if o.strip()]
