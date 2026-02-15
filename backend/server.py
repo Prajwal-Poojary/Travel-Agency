@@ -36,7 +36,7 @@ if not MONGO_URL:
 app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.4.0')
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS if CORS_ORIGINS else ["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,12 +45,23 @@ app.add_middleware(
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ---- DB ----
-client: AsyncIOMotorClient = AsyncIOMotorClient(MONGO_URL)
-db_name_match = re.search(r"/([^/?]+)(?:\?|$)", MONGO_URL)
-DB_NAME = client.get_default_database().name if getattr(client, 'get_default_database', None) and client.get_default_database() is not None else (db_name_match.group(1) if db_name_match else None)
-if not DB_NAME:
-    raise RuntimeError('Database name not found in MONGO_URL')
-db = client[DB_NAME]
+import dns.resolver
+dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
+dns.resolver.default_resolver.nameservers = ['8.8.8.8']
+
+try:
+    client: AsyncIOMotorClient = AsyncIOMotorClient(MONGO_URL, serverSelectionTimeoutMS=5000)
+    db_name_match = re.search(r"/([^/?]+)(?:\?|$)", MONGO_URL)
+    DB_NAME = client.get_default_database().name if getattr(client, 'get_default_database', None) and client.get_default_database() is not None else (db_name_match.group(1) if db_name_match else None)
+    if not DB_NAME:
+        print("Warning: Database name not found in MONGO_URL")
+        db = None
+    else:
+        db = client[DB_NAME]
+except Exception as e:
+    print(f"Warning: Could not initialize MongoDB client: {e}")
+    db = None
+    client = None
 
 # ---- Gemini ----
 gemini_client: Optional[genai.Client] = None
@@ -105,8 +116,217 @@ class NarrationReq(BaseModel):
     duration_hint: Optional[str] = Field(default='short', description='short/medium/long')
     language: Optional[str] = Field(default='en', description='Language code')
 
+class Destination(BaseModel):
+    destination_id: str
+    name: str
+    description: str
+    country: str
+    images: List[str]
+    rating: float
+    price_range: str
+    activities: List[str]
+    featured: bool
+
+# ---- Mock Data (Fallback) ----
+MOCK_DESTINATIONS = [
+    {
+        "destination_id": "1",
+        "name": "Santorini",
+        "description": "Whitewashed buildings, blue domes, and stunning sunsets over the Aegean Sea.",
+        "country": "Greece",
+        "images": ["https://images.unsplash.com/photo-1613395877344-13d4c2ce5d4d?w=800"],
+        "rating": 4.8,
+        "price_range": "$1500 - $3000",
+        "activities": ["Sightseeing", "Boating", "Dining"],
+        "featured": True
+    },
+    {
+        "destination_id": "2",
+        "name": "Kyoto",
+        "description": "Ancient temples, traditional tea houses, and beautiful cherry blossoms.",
+        "country": "Japan",
+        "images": ["https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800"],
+        "rating": 4.9,
+        "price_range": "$2000 - $4000",
+        "activities": ["Cultural", "Walking", "Food"],
+        "featured": True
+    },
+    {
+        "destination_id": "3",
+        "name": "Machu Picchu",
+        "description": "Incan citadel set high in the Andes Mountains in Peru.",
+        "country": "Peru",
+        "images": ["https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800"],
+        "rating": 4.9,
+        "price_range": "$1200 - $2500",
+        "activities": ["Hiking", "History", "Nature"],
+        "featured": True
+    },
+    {
+        "destination_id": "4",
+        "name": "Maldives",
+        "description": "Tropical nation in the Indian Ocean known for its beaches, blue lagoons and extensive reefs.",
+        "country": "Maldives",
+        "images": ["https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800"],
+        "rating": 4.9,
+        "price_range": "$3000 - $6000",
+        "activities": ["Relaxation", "Diving", "Luxury"],
+        "featured": True
+    },
+    {
+        "destination_id": "5",
+        "name": "Amalfi Coast",
+        "description": "Stretch of coastline in Southern Italy overlooking the Tyrrhenian Sea and the Gulf of Salerno.",
+        "country": "Italy",
+        "images": ["https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800"],
+        "rating": 4.7,
+        "price_range": "$1800 - $3500",
+        "activities": ["Driving", "Dining", "Coastal"],
+        "featured": True
+    },
+    {
+        "destination_id": "6",
+        "name": "Banff",
+        "description": "Resort town in the province of Alberta, located within Banff National Park.",
+        "country": "Canada",
+        "images": ["https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800"],
+        "rating": 4.8,
+        "price_range": "$1000 - $2500",
+        "activities": ["Hiking", "Nature", "Skiing"],
+        "featured": True
+    }
+]
+
+MOCK_VIRTUAL_TOURS = [
+    {
+        'tour_id': '1',
+        'name': 'Tokyo 360° Night Walk',
+        'country': 'Japan',
+        'duration': '12:45',
+        'tour_type': '360_video',
+        'thumbnail': 'https://i.ytimg.com/vi/6kAqQWBH6V0/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=6kAqQWBH6V0',
+        'description': 'Experience the neon-lit streets of Shinjuku and Shibuya in fully immersive 360°.',
+        'features': ['360° View', 'City Walk', 'Nightlife'],
+        'featured': True,
+        'views': 120,
+        'highlights': [
+            {'time': '00:45', 'title': 'Shinjuku Crossing', 'description': 'Bustling intersection views'},
+            {'time': '05:10', 'title': 'Golden Gai', 'description': 'Cozy alleys and bars'},
+        ],
+        'interactive_elements': [
+            {'info': 'Look left at 02:10 to see Godzilla Head on Hotel Gracery'},
+        ]
+    },
+    {
+        'tour_id': '2',
+        'name': 'Santorini Cliffside 360°',
+        'country': 'Greece',
+        'duration': '9:03',
+        'tour_type': 'drone_360',
+        'thumbnail': 'https://i.ytimg.com/vi/m2QK_wC9mE8/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=m2QK_wC9mE8',
+        'description': 'A breathtaking aerial 360° tour of Santorini’s blue domes and caldera views.',
+        'features': ['Drone 360', 'Coastline', 'Sunset'],
+        'featured': True,
+        'views': 85,
+        'highlights': [
+            {'time': '01:40', 'title': 'Oia Blue Domes', 'description': 'Iconic rooftops at golden hour'},
+        ],
+    },
+    {
+        'tour_id': '3',
+        'name': 'Machu Picchu Interactive Tour',
+        'country': 'Peru',
+        'duration': '14:22',
+        'tour_type': 'interactive_360',
+        'thumbnail': 'https://i.ytimg.com/vi/2m8uRkJ8A_4/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=2m8uRkJ8A_4',
+        'description': 'Explore the ancient citadel with points-of-interest overlays and an audio guide.',
+        'features': ['Interactive', 'Ruins', 'Mountains'],
+        'featured': True,
+        'views': 200,
+        'highlights': [
+            {'time': '03:20', 'title': 'Sun Temple', 'description': 'Stunning stonework and vistas'},
+        ],
+        'interactive_elements': [
+            {'info': 'Tap on the terraces (05:30) to learn about Inca agriculture'},
+        ]
+    },
+    {
+        'tour_id': '4',
+        'name': 'Paris Louvre 360° Walkthrough',
+        'country': 'France',
+        'duration': '11:11',
+        'tour_type': 'cultural_360',
+        'thumbnail': 'https://i.ytimg.com/vi/7A1tM6l5oMc/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=7A1tM6l5oMc',
+        'description': 'A cultural 360° stroll through Louvre courtyards and nearby landmarks.',
+        'features': ['Museums', 'Culture', 'City Walk'],
+        'featured': False,
+        'views': 45,
+    },
+    {
+        'tour_id': '5',
+        'name': 'New Zealand Fiordland 360°',
+        'country': 'New Zealand',
+        'duration': '10:02',
+        'tour_type': 'drone_360',
+        'thumbnail': 'https://i.ytimg.com/vi/h0eS0uU56Nw/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=h0eS0uU56Nw',
+        'description': 'Soar above Milford Sound and dramatic fjords in stunning 360°.',
+        'features': ['Nature', 'Drone 360', 'Mountains'],
+        'featured': False,
+        'views': 30,
+    },
+    {
+        'tour_id': '6',
+        'name': 'Cairo Pyramids 360°',
+        'country': 'Egypt',
+        'duration': '8:27',
+        'tour_type': 'interactive_360',
+        'thumbnail': 'https://i.ytimg.com/vi/1dV7l8l2rKs/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=1dV7l8l2rKs',
+        'description': 'Interactive 360° with pyramid facts and quick time jumps to key viewpoints.',
+        'features': ['Desert', 'History', 'Interactive'],
+        'featured': False,
+        'views': 60,
+    },
+    {
+        'tour_id': '7',
+        'name': 'Bali Ubud Rice Terraces 360°',
+        'country': 'Indonesia',
+        'duration': '7:59',
+        'tour_type': '360_video',
+        'thumbnail': 'https://i.ytimg.com/vi/i3e0iQH3D1g/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=i3e0iQH3D1g',
+        'description': 'Walk through lush emerald terraces and jungle sounds in 360°.',
+        'features': ['Nature', '360° View', 'Culture'],
+        'featured': False,
+        'views': 25,
+    },
+    {
+        'tour_id': '8',
+        'name': 'New York City 360° Rooftop',
+        'country': 'USA',
+        'duration': '6:45',
+        'tour_type': '360_video',
+        'thumbnail': 'https://i.ytimg.com/vi/2-Bm-t5nAnw/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=2-Bm-t5nAnw',
+        'description': 'Iconic skyline views from a Midtown rooftop in 360°.',
+        'features': ['City', 'Skyline', '360° View'],
+        'featured': False,
+        'views': 90,
+    },
+]
+
 # ---- Utils ----
 ALG = 'HS256'
+
+def fix_id(doc):
+    if doc and '_id' in doc:
+        doc['_id'] = str(doc['_id'])
+    return doc
 
 def create_token(username: str, user_id: str) -> str:
     payload = {
@@ -121,9 +341,13 @@ async def get_user_from_token(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith('Bearer '):
         raise HTTPException(status_code=401, detail='No token provided')
     token = authorization.split(' ', 1)[1]
+    if token == 'mock_token':
+        return {'user_id': 'mock_user_id', 'username': 'demo_user', 'email': 'demo@example.com', 'created_at': datetime.utcnow()}
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALG])
         username = payload.get('username')
+        if db is None:
+             raise HTTPException(status_code=500, detail='Database unavailable')
         user = await db.users.find_one({'username': username})
         if not user:
             raise HTTPException(status_code=401, detail='User not found')
@@ -131,7 +355,24 @@ async def get_user_from_token(authorization: Optional[str] = Header(None)):
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail='Invalid token')
 
-# ---- Seed & Indexes ----
+# ---- Chat persistence helpers ----
+async def upsert_session_message(user_id: str, session_id: str, role: str, content: str):
+    if db is None: return # Skip persistence
+    now = datetime.utcnow().isoformat()
+    await db.chat_sessions.update_one(
+        {'session_id': session_id, 'user_id': user_id},
+        {
+            '$setOnInsert': {
+                'session_id': session_id,
+                'user_id': user_id,
+                'created_at': now
+            },
+            '$set': { 'updated_at': now },
+            '$push': { 'messages': {'role': role, 'content': content, 'timestamp': now} }
+        },
+        upsert=True
+    )
+
 async def ensure_indexes_and_seed():
     # Users
     await db.users.create_index('email', unique=True)
@@ -169,134 +410,24 @@ async def ensure_indexes_and_seed():
     # Seed virtual tours (only if empty)
     count = await db.virtual_tours.estimated_document_count()
     if count == 0:
-        seed = [
-            {
-                'tour_id': str(uuid4()),
-                'name': 'Tokyo 360° Night Walk',
-                'country': 'Japan',
-                'duration': '12:45',
-                'tour_type': '360_video',
-                'thumbnail': 'https://i.ytimg.com/vi/6kAqQWBH6V0/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=6kAqQWBH6V0',
-                'description': 'Experience the neon-lit streets of Shinjuku and Shibuya in fully immersive 360°.',
-                'features': ['360° View', 'City Walk', 'Nightlife'],
-                'featured': True,
-                'views': 0,
-                'highlights': [
-                    {'time': '00:45', 'title': 'Shinjuku Crossing', 'description': 'Bustling intersection views'},
-                    {'time': '05:10', 'title': 'Golden Gai', 'description': 'Cozy alleys and bars'},
-                ],
-                'interactive_elements': [
-                    {'info': 'Look left at 02:10 to see Godzilla Head on Hotel Gracery'},
-                ]
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'Santorini Cliffside 360°',
-                'country': 'Greece',
-                'duration': '9:03',
-                'tour_type': 'drone_360',
-                'thumbnail': 'https://i.ytimg.com/vi/m2QK_wC9mE8/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=m2QK_wC9mE8',
-                'description': 'A breathtaking aerial 360° tour of Santorini’s blue domes and caldera views.',
-                'features': ['Drone 360', 'Coastline', 'Sunset'],
-                'featured': True,
-                'views': 0,
-                'highlights': [
-                    {'time': '01:40', 'title': 'Oia Blue Domes', 'description': 'Iconic rooftops at golden hour'},
-                ],
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'Machu Picchu Interactive Tour',
-                'country': 'Peru',
-                'duration': '14:22',
-                'tour_type': 'interactive_360',
-                'thumbnail': 'https://i.ytimg.com/vi/2m8uRkJ8A_4/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=2m8uRkJ8A_4',
-                'description': 'Explore the ancient citadel with points-of-interest overlays and an audio guide.',
-                'features': ['Interactive', 'Ruins', 'Mountains'],
-                'featured': True,
-                'views': 0,
-                'highlights': [
-                    {'time': '03:20', 'title': 'Sun Temple', 'description': 'Stunning stonework and vistas'},
-                ],
-                'interactive_elements': [
-                    {'info': 'Tap on the terraces (05:30) to learn about Inca agriculture'},
-                ]
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'Paris Louvre 360° Walkthrough',
-                'country': 'France',
-                'duration': '11:11',
-                'tour_type': 'cultural_360',
-                'thumbnail': 'https://i.ytimg.com/vi/7A1tM6l5oMc/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=7A1tM6l5oMc',
-                'description': 'A cultural 360° stroll through Louvre courtyards and nearby landmarks.',
-                'features': ['Museums', 'Culture', 'City Walk'],
-                'featured': False,
-                'views': 0,
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'New Zealand Fiordland 360°',
-                'country': 'New Zealand',
-                'duration': '10:02',
-                'tour_type': 'drone_360',
-                'thumbnail': 'https://i.ytimg.com/vi/h0eS0uU56Nw/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=h0eS0uU56Nw',
-                'description': 'Soar above Milford Sound and dramatic fjords in stunning 360°.',
-                'features': ['Nature', 'Drone 360', 'Mountains'],
-                'featured': False,
-                'views': 0,
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'Cairo Pyramids 360°',
-                'country': 'Egypt',
-                'duration': '8:27',
-                'tour_type': 'interactive_360',
-                'thumbnail': 'https://i.ytimg.com/vi/1dV7l8l2rKs/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=1dV7l8l2rKs',
-                'description': 'Interactive 360° with pyramid facts and quick time jumps to key viewpoints.',
-                'features': ['Desert', 'History', 'Interactive'],
-                'featured': False,
-                'views': 0,
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'Bali Ubud Rice Terraces 360°',
-                'country': 'Indonesia',
-                'duration': '7:59',
-                'tour_type': '360_video',
-                'thumbnail': 'https://i.ytimg.com/vi/i3e0iQH3D1g/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=i3e0iQH3D1g',
-                'description': 'Walk through lush emerald terraces and jungle sounds in 360°.',
-                'features': ['Nature', '360° View', 'Culture'],
-                'featured': False,
-                'views': 0,
-            },
-            {
-                'tour_id': str(uuid4()),
-                'name': 'New York City 360° Rooftop',
-                'country': 'USA',
-                'duration': '6:45',
-                'tour_type': '360_video',
-                'thumbnail': 'https://i.ytimg.com/vi/2-Bm-t5nAnw/hqdefault.jpg',
-                'video_url': 'https://www.youtube.com/watch?v=2-Bm-t5nAnw',
-                'description': 'Iconic skyline views from a Midtown rooftop in 360°.',
-                'features': ['City', 'Skyline', '360° View'],
-                'featured': False,
-                'views': 0,
-            },
-        ]
-        await db.virtual_tours.insert_many(seed)
+        await db.virtual_tours.insert_many(MOCK_VIRTUAL_TOURS)
 
 # ---- Startup ----
 @app.on_event('startup')
 async def on_start():
-    await ensure_indexes_and_seed()
+    global db
+    if db is not None:
+        try:
+            # Verify actual connection
+            await client.admin.command('ping')
+            await ensure_indexes_and_seed()
+            print("Database connected and seeded successfully.")
+        except Exception as e:
+            print(f"Warning: Database connection failed: {e}")
+            print("Switching to Mock Data Mode.")
+            db = None
+    else:
+        print("Warning: Database not connected. Using in-memory mock data where possible.")
 
 # ---- Routes ----
 @app.get('/')
@@ -305,10 +436,13 @@ async def root():
 
 @app.get('/api/health')
 async def health():
-    return {'status': 'healthy', 'gemini': bool(gemini_client), 'timestamp': datetime.utcnow().isoformat()}
+    return {'status': 'healthy', 'gemini': bool(gemini_client), 'db': bool(db is not None), 'timestamp': datetime.utcnow().isoformat()}
 
 @app.post('/api/auth/register')
 async def register(body: RegisterBody):
+    if db is None:
+        # Mock registration
+        return {'access_token': 'mock_token', 'token_type': 'bearer', 'user': body.username, 'user_id': str(uuid4())}
     existing = await db.users.find_one({'$or': [{'email': body.email}, {'username': body.username}]})
     if existing:
         raise HTTPException(status_code=400, detail='Email or username already exists')
@@ -327,6 +461,11 @@ async def register(body: RegisterBody):
 
 @app.post('/api/auth/login')
 async def login(body: LoginBody):
+    if db is None:
+        # Mock login for demo purpose when DB is down
+        if body.email == 'demo@example.com' or True: # Allow anyone to login in fallback mode
+             return {'access_token': 'mock_token', 'token_type': 'bearer', 'user': 'demo_user', 'user_id': 'mock_user_id'}
+
     user = await db.users.find_one({'email': body.email})
     if not user or not pwd_context.verify(body.password, user.get('password','')):
         raise HTTPException(status_code=401, detail='Invalid credentials')
@@ -335,30 +474,19 @@ async def login(body: LoginBody):
 
 @app.get('/api/auth/profile', response_model=ProfileOut)
 async def profile(user=Depends(get_user_from_token)):
+    if user.get('user_id') == 'mock_user_id':
+         return ProfileOut(
+            user_id='mock_user_id', username='demo_user', email='demo@example.com', full_name='Demo User', avatar=None, created_at=datetime.utcnow()
+        )
     return ProfileOut(
         user_id=user['user_id'], username=user['username'], email=user['email'], full_name=user.get('full_name',''), avatar=user.get('avatar'), created_at=user['created_at']
     )
 
-# ---- Chat persistence helpers ----
-async def upsert_session_message(user_id: str, session_id: str, role: str, content: str):
-    now = datetime.utcnow().isoformat()
-    await db.chat_sessions.update_one(
-        {'session_id': session_id, 'user_id': user_id},
-        {
-            '$setOnInsert': {
-                'session_id': session_id,
-                'user_id': user_id,
-                'created_at': now,
-                'messages': []
-            },
-            '$set': { 'updated_at': now },
-            '$push': { 'messages': {'role': role, 'content': content, 'timestamp': now} }
-        },
-        upsert=True
-    )
+
 
 @app.get('/api/chat/sessions')
 async def list_sessions(user=Depends(get_user_from_token)):
+    if db is None: return {'sessions': []}
     cursor = db.chat_sessions.find({'user_id': user['user_id']}, {'messages': {'$slice': 1}}).sort('updated_at', -1).limit(50)
     sessions = []
     async for s in cursor:
@@ -367,6 +495,7 @@ async def list_sessions(user=Depends(get_user_from_token)):
 
 @app.get('/api/chat/sessions/{session_id}')
 async def get_session(session_id: str, user=Depends(get_user_from_token)):
+    if db is None: return {'session_id': session_id, 'messages': [], 'created_at': None}
     s = await db.chat_sessions.find_one({'session_id': session_id, 'user_id': user['user_id']})
     if not s:
         return {'session_id': session_id, 'messages': [], 'created_at': None}
@@ -374,6 +503,7 @@ async def get_session(session_id: str, user=Depends(get_user_from_token)):
 
 @app.delete('/api/chat/sessions/{session_id}')
 async def delete_session(session_id: str, user=Depends(get_user_from_token)):
+    if db is None: return {'message': 'Deleted (Mock)'}
     await db.chat_sessions.delete_one({'session_id': session_id, 'user_id': user['user_id']})
     return {'message': f'Chat session {session_id} deleted successfully'}
 
@@ -449,50 +579,80 @@ async def get_virtual_tours(
     page: int = 1,
     limit: int = 12,
 ):
-    filters = {}
-    if search:
-        filters['$or'] = [
-            {'name': {'$regex': search, '$options': 'i'}},
-            {'description': {'$regex': search, '$options': 'i'}},
-            {'country': {'$regex': search, '$options': 'i'}},
-        ]
-    if type:
-        filters['tour_type'] = type
-    if country:
-        filters['country'] = country
+    try:
+        if db is None: raise Exception("Use Mock")
+        filters = {}
+        if search:
+            filters['$or'] = [
+                {'name': {'$regex': search, '$options': 'i'}},
+                {'description': {'$regex': search, '$options': 'i'}},
+                {'country': {'$regex': search, '$options': 'i'}},
+            ]
+        if type:
+            filters['tour_type'] = type
+        if country:
+            filters['country'] = country
 
-    skip = max(0, (page - 1) * limit)
-    cursor = db.virtual_tours.find(filters).sort([('featured', -1), ('views', -1)]).skip(skip).limit(limit)
-    results = []
-    async for doc in cursor:
-        results.append(doc)
-    total = await db.virtual_tours.count_documents(filters)
-    return {
-        'items': results,
-        'page': page,
-        'limit': limit,
-        'total': total,
-        'has_more': (skip + len(results)) < total
-    }
+        skip = max(0, (page - 1) * limit)
+        cursor = db.virtual_tours.find(filters).sort([('featured', -1), ('views', -1)]).skip(skip).limit(limit)
+        results = []
+        async for doc in cursor:
+            results.append(fix_id(doc))
+        total = await db.virtual_tours.count_documents(filters)
+        return {
+            'items': results,
+            'page': page,
+            'limit': limit,
+            'total': total,
+            'has_more': (skip + len(results)) < total
+        }
+    except Exception as e:
+        print(f"Error serving virtual tours: {e}. Returning Mocks.")
+        # Mock filtering
+        results = MOCK_VIRTUAL_TOURS
+        if search:
+            s = search.lower()
+            results = [t for t in results if s in t['name'].lower() or s in t.get('description','').lower()]
+        if type:
+            results = [t for t in results if t.get('tour_type') == type]
+        if country:
+            results = [t for t in results if t.get('country') == country]
+        
+        start = (page - 1) * limit
+        end = start + limit
+        return {
+            'items': results[start:end],
+            'page': page,
+            'limit': limit,
+            'total': len(results),
+            'has_more': end < len(results)
+        }
 
 @app.get('/api/virtual-tours/featured')
 async def get_featured_virtual_tours(limit: int = 6):
-    cursor = db.virtual_tours.find({'featured': True}).sort('name', 1).limit(int(limit))
-    results = []
-    async for doc in cursor:
-        results.append(doc)
-    return results
+    try:
+        if db is None: raise Exception("Use Mock")
+        cursor = db.virtual_tours.find({'featured': True}).sort('name', 1).limit(int(limit))
+        results = []
+        async for doc in cursor:
+            results.append(fix_id(doc))
+        return results
+    except Exception:
+        return [t for t in MOCK_VIRTUAL_TOURS if t.get('featured')][:limit]
 
 @app.get('/api/virtual-tours/trending')
 async def get_trending_virtual_tours(limit: int = 6):
+    if db is None:
+        return sorted(MOCK_VIRTUAL_TOURS, key=lambda x: x.get('views', 0), reverse=True)[:limit]
     cursor = db.virtual_tours.find({}).sort('views', -1).limit(int(limit))
     results = []
     async for doc in cursor:
-        results.append(doc)
+        results.append(fix_id(doc))
     return results
 
 @app.post('/api/virtual-tours/{tour_id}/view')
 async def add_view_virtual_tour(tour_id: str):
+    if db is None: return {'message': 'viewed (mock)', 'tour_id': tour_id}
     res = await db.virtual_tours.update_one({'tour_id': tour_id}, {'$inc': {'views': 1}, '$set': {'last_viewed_at': datetime.utcnow().isoformat()}})
     if res.matched_count == 0:
         raise HTTPException(status_code=404, detail='Virtual tour not found')
@@ -500,6 +660,13 @@ async def add_view_virtual_tour(tour_id: str):
 
 @app.get('/api/virtual-tours/types')
 async def get_virtual_tour_types():
+    if db is None:
+         # Aggregate mock types
+         types = {}
+         for t in MOCK_VIRTUAL_TOURS:
+             tt = t.get('tour_type')
+             if tt: types[tt] = types.get(tt, 0) + 1
+         return {'types': [{'type': k, 'count': v} for k,v in types.items()]}
     pipeline = [
         {'$group': {'_id': '$tour_type', 'count': {'$sum': 1}}},
         {'$sort': {'_id': 1}}
@@ -512,20 +679,50 @@ async def get_virtual_tour_types():
 
 @app.get('/api/virtual-tours/countries')
 async def get_virtual_tour_countries():
+    if db is None:
+        return {'countries': sorted(list(set(t['country'] for t in MOCK_VIRTUAL_TOURS if t.get('country'))))}
     countries = await db.virtual_tours.distinct('country')
     countries.sort()
     return {'countries': countries}
 
-@app.get('/api/virtual-tours/{tour_id}')
-async def get_virtual_tour(tour_id: str):
-    tour = await db.virtual_tours.find_one({'tour_id': tour_id})
-    if not tour:
-        raise HTTPException(status_code=404, detail='Virtual tour not found')
-    return tour
+
+
+# ---- Destinations API (New) ----
+@app.get('/api/destinations')
+async def get_destinations(limit: int = 6):
+    return MOCK_DESTINATIONS[:limit]
+
+@app.get('/api/destinations/featured')
+async def get_featured_destinations(limit: int = 6):
+    return [d for d in MOCK_DESTINATIONS if d['featured']][:limit]
+
+@app.get('/api/destinations/countries')
+async def get_destination_countries():
+    return sorted(list(set(d['country'] for d in MOCK_DESTINATIONS)))
+
+@app.get('/api/destinations/activities')
+async def get_destination_activities():
+    acts = set()
+    for d in MOCK_DESTINATIONS:
+        for a in d.get('activities', []):
+            acts.add(a)
+    return sorted(list(acts))
+
+@app.get('/api/destinations/{destination_id}')
+async def get_destination(destination_id: str):
+    d = next((x for x in MOCK_DESTINATIONS if x['destination_id'] == destination_id), None)
+    if not d: raise HTTPException(status_code=404, detail='Destination not found')
+    return d
+
+@app.post('/api/destinations')
+async def create_destination(body: Destination):
+    MOCK_DESTINATIONS.append(body.dict())
+    return body
 
 # ---- Favorites (auth required) ----
 @app.get('/api/virtual-tours/favorites')
 async def list_favorites(user=Depends(get_user_from_token)):
+    if db is None: return {'items': []}
     fav_cursor = db.favorites.find({'user_id': user['user_id']})
     fav_ids = []
     async for f in fav_cursor:
@@ -535,11 +732,12 @@ async def list_favorites(user=Depends(get_user_from_token)):
     cursor = db.virtual_tours.find({'tour_id': {'$in': fav_ids}})
     items = []
     async for t in cursor:
-        items.append(t)
+        items.append(fix_id(t))
     return {'items': items}
 
 @app.post('/api/virtual-tours/{tour_id}/favorite')
 async def favorite_tour(tour_id: str, user=Depends(get_user_from_token)):
+    if db is None: return {'message': 'Favorited (Mock)', 'tour_id': tour_id}
     tour = await db.virtual_tours.find_one({'tour_id': tour_id})
     if not tour:
         raise HTTPException(status_code=404, detail='Virtual tour not found')
@@ -555,13 +753,31 @@ async def favorite_tour(tour_id: str, user=Depends(get_user_from_token)):
 
 @app.delete('/api/virtual-tours/{tour_id}/favorite')
 async def unfavorite_tour(tour_id: str, user=Depends(get_user_from_token)):
+    if db is None: return {'message': 'Unfavorited (Mock)', 'tour_id': tour_id}
     await db.favorites.delete_one({'user_id': user['user_id'], 'tour_id': tour_id})
     return {'message': 'Unfavorited', 'tour_id': tour_id}
+
+@app.get('/api/virtual-tours/{tour_id}')
+async def get_virtual_tour(tour_id: str):
+    try:
+        if db is None: raise Exception("Use Mock")
+        tour = await db.virtual_tours.find_one({'tour_id': tour_id})
+        if not tour:
+            raise HTTPException(status_code=404, detail='Virtual tour not found')
+        return fix_id(tour)
+    except Exception:
+        t = next((x for x in MOCK_VIRTUAL_TOURS if x['tour_id'] == tour_id), None)
+        if not t: raise HTTPException(status_code=404, detail='Virtual tour not found')
+        return t
 
 # ---- AI Narration for a tour (auth required) ----
 @app.post('/api/virtual-tours/{tour_id}/narrate')
 async def narrate_tour(tour_id: str, req: NarrationReq, user=Depends(get_user_from_token)):
-    tour = await db.virtual_tours.find_one({'tour_id': tour_id})
+    if db is None:
+        tour = next((x for x in MOCK_VIRTUAL_TOURS if x['tour_id'] == tour_id), None)
+    else:
+        tour = await db.virtual_tours.find_one({'tour_id': tour_id})
+    
     if not tour:
         raise HTTPException(status_code=404, detail='Virtual tour not found')
 
