@@ -127,6 +127,18 @@ class Destination(BaseModel):
     activities: List[str]
     featured: bool
 
+
+class BookingReq(BaseModel):
+    destination_id: str
+    date: str
+    guests: int
+    total_price: float
+
+class ReviewReq(BaseModel):
+    destination_id: str
+    rating: int
+    comment: str
+
 # ---- Mock Data (Fallback) ----
 MOCK_DESTINATIONS = [
     {
@@ -412,6 +424,11 @@ async def ensure_indexes_and_seed():
     if count == 0:
         await db.virtual_tours.insert_many(MOCK_VIRTUAL_TOURS)
 
+    # Seed destinations (only if empty)
+    d_count = await db.destinations.estimated_document_count()
+    if d_count == 0:
+        await db.destinations.insert_many(MOCK_DESTINATIONS)
+
 # ---- Startup ----
 @app.on_event('startup')
 async def on_start():
@@ -690,34 +707,75 @@ async def get_virtual_tour_countries():
 # ---- Destinations API (New) ----
 @app.get('/api/destinations')
 async def get_destinations(limit: int = 6):
-    return MOCK_DESTINATIONS[:limit]
+    if db is None:
+        return MOCK_DESTINATIONS[:limit]
+    cursor = db.destinations.find({}).limit(int(limit))
+    results = []
+    async for doc in cursor:
+        results.append(fix_id(doc))
+    return results
 
 @app.get('/api/destinations/featured')
 async def get_featured_destinations(limit: int = 6):
-    return [d for d in MOCK_DESTINATIONS if d['featured']][:limit]
+    if db is None:
+        return [d for d in MOCK_DESTINATIONS if d['featured']][:limit]
+    cursor = db.destinations.find({'featured': True}).limit(int(limit))
+    results = []
+    async for doc in cursor:
+        results.append(fix_id(doc))
+    return results
 
 @app.get('/api/destinations/countries')
 async def get_destination_countries():
-    return sorted(list(set(d['country'] for d in MOCK_DESTINATIONS)))
+    if db is None:
+        return sorted(list(set(d['country'] for d in MOCK_DESTINATIONS)))
+    countries = await db.destinations.distinct('country')
+    countries.sort()
+    return sorted(countries)
 
 @app.get('/api/destinations/activities')
 async def get_destination_activities():
-    acts = set()
-    for d in MOCK_DESTINATIONS:
-        for a in d.get('activities', []):
-            acts.add(a)
-    return sorted(list(acts))
+    if db is None:
+        acts = set()
+        for d in MOCK_DESTINATIONS:
+            for a in d.get('activities', []):
+                acts.add(a)
+        return sorted(list(acts))
+    # Use aggregation to get distinct activities
+    pipeline = [
+        {'$unwind': '$activities'},
+        {'$group': {'_id': None, 'all_activities': {'$addToSet': '$activities'}}}
+    ]
+    result = await db.destinations.aggregate(pipeline).to_list(1)
+    if result:
+        return sorted(result[0]['all_activities'])
+    return []
 
 @app.get('/api/destinations/{destination_id}')
 async def get_destination(destination_id: str):
-    d = next((x for x in MOCK_DESTINATIONS if x['destination_id'] == destination_id), None)
-    if not d: raise HTTPException(status_code=404, detail='Destination not found')
-    return d
+    if db is None:
+        d = next((x for x in MOCK_DESTINATIONS if x['destination_id'] == destination_id), None)
+        if not d: raise HTTPException(status_code=404, detail='Destination not found')
+        return d
+    d = await db.destinations.find_one({'destination_id': destination_id})
+    if not d:
+        raise HTTPException(status_code=404, detail='Destination not found')
+    return fix_id(d)
 
 @app.post('/api/destinations')
 async def create_destination(body: Destination):
-    MOCK_DESTINATIONS.append(body.dict())
-    return body
+    doc = body.dict()
+    if db is None:
+        MOCK_DESTINATIONS.append(doc)
+        return body
+    
+    # Check for duplicate ID
+    existing = await db.destinations.find_one({'destination_id': body.destination_id})
+    if existing:
+        raise HTTPException(status_code=400, detail='Destination ID already exists')
+    
+    await db.destinations.insert_one(doc)
+    return fix_id(doc)
 
 # ---- Favorites (auth required) ----
 @app.get('/api/virtual-tours/favorites')
@@ -810,6 +868,89 @@ async def narrate_tour(tour_id: str, req: NarrationReq, user=Depends(get_user_fr
         return {'narration': narration}
     except Exception:
         return {'narration': 'We are experiencing technical difficulties generating narration. Please try again later.'}
+
+# ---- Bookings API ----
+@app.post('/api/bookings')
+async def create_booking(body: BookingReq, user=Depends(get_user_from_token)):
+    if db is None:
+        return {'booking_id': str(uuid4()), **body.dict(), 'status': 'confirmed', 'created_at': datetime.utcnow()}
+    
+    # Verify destination exists
+    destination = await db.destinations.find_one({'destination_id': body.destination_id})
+    if not destination:
+        raise HTTPException(status_code=404, detail='Destination not found')
+
+    booking = {
+        'booking_id': str(uuid4()),
+        'user_id': user['user_id'],
+        'destination_id': body.destination_id,
+        'destination_name': destination['name'],
+        'destination_image': destination['images'][0] if destination.get('images') else None,
+        'date': body.date,
+        'guests': body.guests,
+        'total_price': body.total_price,
+        'status': 'confirmed',
+        'created_at': datetime.utcnow()
+    }
+    await db.bookings.insert_one(booking)
+    return fix_id(booking)
+
+@app.get('/api/bookings')
+async def get_user_bookings(user=Depends(get_user_from_token)):
+    if db is None: return []
+    cursor = db.bookings.find({'user_id': user['user_id']}).sort('created_at', -1)
+    bookings = []
+    async for doc in cursor:
+        bookings.append(fix_id(doc))
+    return bookings
+
+@app.delete('/api/bookings/{booking_id}')
+async def cancel_booking(booking_id: str, user=Depends(get_user_from_token)):
+    if db is None: return {'message': 'Booking cancelled (mock)'}
+    result = await db.bookings.delete_one({'booking_id': booking_id, 'user_id': user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail='Booking not found')
+    return {'message': 'Booking cancelled successfully'}
+
+# ---- Reviews API ----
+@app.post('/api/reviews')
+async def create_review(body: ReviewReq, user=Depends(get_user_from_token)):
+    if db is None: return {'message': 'Review added (mock)'}
+    
+    # Verify destination
+    destination = await db.destinations.find_one({'destination_id': body.destination_id})
+    if not destination:
+         raise HTTPException(status_code=404, detail='Destination not found')
+
+    review = {
+        'review_id': str(uuid4()),
+        'user_id': user['user_id'],
+        'username': user['username'],
+        'destination_id': body.destination_id,
+        'rating': body.rating,
+        'comment': body.comment,
+        'created_at': datetime.utcnow()
+    }
+    await db.reviews.insert_one(review)
+    return fix_id(review)
+
+@app.get('/api/reviews/{destination_id}')
+async def get_destination_reviews(destination_id: str):
+    if db is None: return []
+    cursor = db.reviews.find({'destination_id': destination_id}).sort('created_at', -1)
+    reviews = []
+    async for doc in cursor:
+        reviews.append(fix_id(doc))
+    return reviews
+
+@app.delete('/api/reviews/{review_id}')
+async def delete_review(review_id: str, user=Depends(get_user_from_token)):
+    if db is None: return {'message': 'Deleted (mock)'}
+    # Allow deletion if user owns it OR if user is admin (logic for admin not implemented, assuming owner only)
+    result = await db.reviews.delete_one({'review_id': review_id, 'user_id': user['user_id']})
+    if result.deleted_count == 0:
+         raise HTTPException(status_code=404, detail='Review not found or permission denied')
+    return {'message': 'Review deleted successfully'}
 
 # ---- Run (handled by supervisor) ----
 # Do not add uvicorn.run here.
