@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Clock, 
-  CreditCard, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  CreditCard,
+  CheckCircle,
+  XCircle,
   AlertCircle,
   Filter,
   Search,
@@ -33,6 +33,10 @@ const EnhancedBookings = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
+  // Review State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
 
   // Fetch user bookings
   const { data: bookings, isLoading, error } = useQuery(
@@ -101,11 +105,11 @@ const EnhancedBookings = () => {
 
   const filteredBookings = bookings?.filter(booking => {
     const matchesStatus = selectedStatus === 'all' || booking.status === selectedStatus;
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       booking.destination_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.destination_details?.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.destination_details?.country?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesStatus && matchesSearch;
   }) || [];
 
@@ -131,7 +135,7 @@ const EnhancedBookings = () => {
       totalAmount: booking.total_amount,
       createdAt: booking.created_at
     }));
-    
+
     const blob = new Blob([JSON.stringify(bookingData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -139,6 +143,31 @@ const EnhancedBookings = () => {
     a.download = `bookings-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Review Logic
+  const handleOpenReview = (booking) => {
+    setSelectedBooking(booking);
+    setReviewRating(5);
+    setReviewComment('');
+    setShowReviewModal(true);
+  };
+
+  const submitReview = async () => {
+    if (!selectedBooking) return;
+    try {
+      await apiService.createReview({
+        destination_id: selectedBooking.destination_id || 'unknown', // Ensure we have destination_id
+        rating: reviewRating,
+        comment: reviewComment
+      });
+      toast.success('Review submitted successfully!');
+      setShowReviewModal(false);
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error("Review Error:", error);
+      toast.error('Failed to submit review');
+    }
   };
 
   if (!isAuthenticated) {
@@ -278,8 +307,8 @@ const EnhancedBookings = () => {
                 {bookings?.length === 0 ? 'No bookings yet' : 'No bookings found'}
               </h3>
               <p className="text-gray-300 mb-6">
-                {bookings?.length === 0 
-                  ? 'Start planning your next adventure!' 
+                {bookings?.length === 0
+                  ? 'Start planning your next adventure!'
                   : 'Try adjusting your search or filters'
                 }
               </p>
@@ -342,7 +371,7 @@ const EnhancedBookings = () => {
                             </span>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                           {getStatusIcon(booking.status)}
                         </div>
@@ -358,7 +387,7 @@ const EnhancedBookings = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-primary-400" />
                           <div>
@@ -368,7 +397,7 @@ const EnhancedBookings = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4 text-primary-400" />
                           <div>
@@ -392,7 +421,7 @@ const EnhancedBookings = () => {
                             ${booking.total_amount || 'TBD'}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setSelectedBooking(booking)}
@@ -401,7 +430,7 @@ const EnhancedBookings = () => {
                           >
                             <Eye className="w-4 h-4 text-white" />
                           </button>
-                          
+
                           {booking.status === 'pending' && (
                             <>
                               <button
@@ -410,7 +439,7 @@ const EnhancedBookings = () => {
                               >
                                 <Edit className="w-4 h-4 text-white" />
                               </button>
-                              
+
                               <button
                                 onClick={() => handleCancelBooking(booking)}
                                 className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors"
@@ -420,9 +449,12 @@ const EnhancedBookings = () => {
                               </button>
                             </>
                           )}
-                          
+
+
+
                           {booking.status === 'completed' && (
                             <button
+                              onClick={() => handleOpenReview(booking)}
                               className="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center hover:bg-yellow-700 transition-colors"
                               title="Leave review"
                             >
@@ -475,7 +507,7 @@ const EnhancedBookings = () => {
                         {selectedBooking.destination_details?.city}, {selectedBooking.destination_details?.country}
                       </p>
                     </div>
-                    
+
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-3">Status</h3>
                       <div className="flex items-center gap-2">
@@ -497,7 +529,7 @@ const EnhancedBookings = () => {
                         })}
                       </p>
                     </div>
-                    
+
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-3">Check-out</h3>
                       <p className="text-gray-300">
@@ -509,7 +541,7 @@ const EnhancedBookings = () => {
                         })}
                       </p>
                     </div>
-                    
+
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-3">Guests</h3>
                       <p className="text-gray-300">{selectedBooking.guests} guest{selectedBooking.guests > 1 ? 's' : ''}</p>
@@ -547,13 +579,13 @@ const EnhancedBookings = () => {
                           ${selectedBooking.total_amount || 'TBD'}
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                           <Phone className="w-4 h-4" />
                           Contact Support
                         </button>
-                        
+
                         <button className="flex items-center gap-2 px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
                           <MessageCircle className="w-4 h-4" />
                           Live Chat
@@ -588,13 +620,13 @@ const EnhancedBookings = () => {
                   <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <XCircle className="w-8 h-8 text-white" />
                   </div>
-                  
+
                   <h3 className="text-xl font-bold text-white mb-2">Cancel Booking</h3>
                   <p className="text-gray-300 mb-6">
                     Are you sure you want to cancel your booking for {selectedBooking.destination_name}?
                     This action cannot be undone.
                   </p>
-                  
+
                   <div className="flex gap-4">
                     <button
                       onClick={() => setShowCancelModal(false)}
@@ -602,7 +634,7 @@ const EnhancedBookings = () => {
                     >
                       Keep Booking
                     </button>
-                    
+
                     <button
                       onClick={confirmCancelBooking}
                       disabled={cancelBookingMutation.isLoading}
@@ -612,6 +644,61 @@ const EnhancedBookings = () => {
                     </button>
                   </div>
                 </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Review Modal */}
+        <AnimatePresence>
+          {showReviewModal && selectedBooking && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              onClick={() => setShowReviewModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="glass rounded-2xl p-6 max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Rate {selectedBooking.destination_name}</h3>
+                  <button onClick={() => setShowReviewModal(false)}><XCircle className="text-white w-6 h-6" /></button>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-gray-300 block mb-2">Rating</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button key={star} onClick={() => setReviewRating(star)}>
+                        <Star className={`w-8 h-8 ${star <= reviewRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-500'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="text-gray-300 block mb-2">Comment</label>
+                  <textarea
+                    className="w-full bg-gray-800 text-white rounded p-2"
+                    rows="4"
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="Tell us about your experience..."
+                  />
+                </div>
+
+                <button
+                  onClick={submitReview}
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-lg font-bold"
+                >
+                  Submit Review
+                </button>
               </motion.div>
             </motion.div>
           )}

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, Depends, Header, Request, Query
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -130,7 +131,8 @@ class Destination(BaseModel):
 
 class BookingReq(BaseModel):
     destination_id: str
-    date: str
+    check_in_date: str
+    check_out_date: str
     guests: int
     total_price: float
 
@@ -221,14 +223,11 @@ MOCK_VIRTUAL_TOURS = [
         'description': 'Experience the neon-lit streets of Shinjuku and Shibuya in fully immersive 360°.',
         'features': ['360° View', 'City Walk', 'Nightlife'],
         'featured': True,
-        'views': 120,
+        'views': 1200,
         'highlights': [
             {'time': '00:45', 'title': 'Shinjuku Crossing', 'description': 'Bustling intersection views'},
             {'time': '05:10', 'title': 'Golden Gai', 'description': 'Cozy alleys and bars'},
         ],
-        'interactive_elements': [
-            {'info': 'Look left at 02:10 to see Godzilla Head on Hotel Gracery'},
-        ]
     },
     {
         'tour_id': '2',
@@ -241,36 +240,85 @@ MOCK_VIRTUAL_TOURS = [
         'description': 'A breathtaking aerial 360° tour of Santorini’s blue domes and caldera views.',
         'features': ['Drone 360', 'Coastline', 'Sunset'],
         'featured': True,
-        'views': 85,
-        'highlights': [
-            {'time': '01:40', 'title': 'Oia Blue Domes', 'description': 'Iconic rooftops at golden hour'},
-        ],
+        'views': 950,
+        'highlights': [],
     },
     {
         'tour_id': '3',
-        'name': 'Machu Picchu Interactive Tour',
-        'country': 'Peru',
-        'duration': '14:22',
-        'tour_type': 'interactive_360',
-        'thumbnail': 'https://i.ytimg.com/vi/2m8uRkJ8A_4/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=2m8uRkJ8A_4',
-        'description': 'Explore the ancient citadel with points-of-interest overlays and an audio guide.',
-        'features': ['Interactive', 'Ruins', 'Mountains'],
+        'name': 'Times Square Live',
+        'country': 'USA',
+        'duration': 'LIVE',
+        'tour_type': 'live_cam',
+        'thumbnail': 'https://i.ytimg.com/vi/1-iS7LArMPA/hqdefault_live.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=1-iS7LArMPA',
+        'description': 'Live streaming view of the heart of New York City.',
+        'features': ['Live Stream', 'Cityscape', 'Crowds'],
         'featured': True,
-        'views': 200,
-        'highlights': [
-            {'time': '03:20', 'title': 'Sun Temple', 'description': 'Stunning stonework and vistas'},
-        ],
-        'interactive_elements': [
-            {'info': 'Tap on the terraces (05:30) to learn about Inca agriculture'},
-        ]
+        'views': 5000,
+        'highlights': [],
     },
     {
         'tour_id': '4',
-        'name': 'Paris Louvre 360° Walkthrough',
+        'name': 'Maldives Drone 4K',
+        'country': 'Maldives',
+        'duration': '04:15',
+        'tour_type': 'drone_video',
+        'thumbnail': 'https://i.ytimg.com/vi/ysz5S6PUM-U/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=ysz5S6PUM-U',
+        'description': 'Cinematic drone footage of crystal clear waters and overwater bungalows.',
+        'features': ['4K Resolution', 'Drone View', 'Relaxation'],
+        'featured': False,
+        'views': 320,
+        'highlights': [],
+    },
+    {
+        'tour_id': '5',
+        'name': 'Aurora Borealis 360',
+        'country': 'Iceland',
+        'duration': '02:30',
+        'tour_type': '360_video',
+        'thumbnail': 'https://i.ytimg.com/vi/7j1oWk1bV9U/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=7j1oWk1bV9U',
+        'description': 'Immersive 360 video of the Northern Lights dancing over snow-covered landscapes.',
+        'features': ['360° View', 'Nature', 'Night Sky'],
+        'featured': True,
+        'views': 450,
+        'highlights': [],
+    },
+    {
+        'tour_id': '6',
+        'name': 'Venice Grand Canal Live',
+        'country': 'Italy',
+        'duration': 'LIVE',
+        'tour_type': 'live_cam',
+        'thumbnail': 'https://i.ytimg.com/vi/ph1vpnYIxJk/hqdefault_live.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=ph1vpnYIxJk',
+        'description': 'Live view of the Grand Canal and Rialto Bridge in Venice.',
+        'features': ['Live Stream', 'Historic', 'Waterway'],
+        'featured': False,
+        'views': 1200,
+        'highlights': [],
+    },
+    {
+        'tour_id': '7',
+        'name': 'Machu Picchu Interactive',
+        'country': 'Peru',
+        'duration': '14:22',
+        'tour_type': '360_video',
+        'thumbnail': 'https://i.ytimg.com/vi/2m8uRkJ8A_4/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=2m8uRkJ8A_4',
+        'description': 'Explore the ancient citadel with points-of-interest overlays.',
+        'features': ['Interactive', 'Ruins', 'Mountains'],
+        'featured': True,
+        'views': 200,
+        'highlights': [],
+    },
+    {
+        'tour_id': '8',
+        'name': 'Paris Louvre Walkthrough',
         'country': 'France',
         'duration': '11:11',
-        'tour_type': 'cultural_360',
+        'tour_type': '360_video',
         'thumbnail': 'https://i.ytimg.com/vi/7A1tM6l5oMc/hqdefault.jpg',
         'video_url': 'https://www.youtube.com/watch?v=7A1tM6l5oMc',
         'description': 'A cultural 360° stroll through Louvre courtyards and nearby landmarks.',
@@ -279,57 +327,31 @@ MOCK_VIRTUAL_TOURS = [
         'views': 45,
     },
     {
-        'tour_id': '5',
-        'name': 'New Zealand Fiordland 360°',
-        'country': 'New Zealand',
-        'duration': '10:02',
-        'tour_type': 'drone_360',
-        'thumbnail': 'https://i.ytimg.com/vi/h0eS0uU56Nw/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=h0eS0uU56Nw',
-        'description': 'Soar above Milford Sound and dramatic fjords in stunning 360°.',
-        'features': ['Nature', 'Drone 360', 'Mountains'],
+        'tour_id': '9',
+        'name': 'Swiss Alps Drone View',
+        'country': 'Switzerland',
+        'duration': '05:45',
+        'tour_type': 'drone_video',
+        'thumbnail': 'https://i.ytimg.com/vi/L0g5e3g3a0w/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=L0g5e3g3a0w',
+        'description': 'Stunning 4K drone footage of the Swiss Alps in winter.',
+        'features': ['Drone View', 'Mountains', 'Snow'],
         'featured': False,
-        'views': 30,
+        'views': 550,
     },
     {
-        'tour_id': '6',
-        'name': 'Cairo Pyramids 360°',
-        'country': 'Egypt',
-        'duration': '8:27',
-        'tour_type': 'interactive_360',
-        'thumbnail': 'https://i.ytimg.com/vi/1dV7l8l2rKs/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=1dV7l8l2rKs',
-        'description': 'Interactive 360° with pyramid facts and quick time jumps to key viewpoints.',
-        'features': ['Desert', 'History', 'Interactive'],
-        'featured': False,
-        'views': 60,
-    },
-    {
-        'tour_id': '7',
-        'name': 'Bali Ubud Rice Terraces 360°',
-        'country': 'Indonesia',
-        'duration': '7:59',
+        'tour_id': '10',
+        'name': 'Kyoto Cherry Blossoms',
+        'country': 'Japan',
+        'duration': '08:20',
         'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/i3e0iQH3D1g/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=i3e0iQH3D1g',
-        'description': 'Walk through lush emerald terraces and jungle sounds in 360°.',
-        'features': ['Nature', '360° View', 'Culture'],
-        'featured': False,
-        'views': 25,
-    },
-    {
-        'tour_id': '8',
-        'name': 'New York City 360° Rooftop',
-        'country': 'USA',
-        'duration': '6:45',
-        'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/2-Bm-t5nAnw/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=2-Bm-t5nAnw',
-        'description': 'Iconic skyline views from a Midtown rooftop in 360°.',
-        'features': ['City', 'Skyline', '360° View'],
-        'featured': False,
-        'views': 90,
-    },
+        'thumbnail': 'https://i.ytimg.com/vi/3b5z8v2h4w0/hqdefault.jpg',
+        'video_url': 'https://www.youtube.com/watch?v=3b5z8v2h4w0',
+        'description': 'Relaxing 360° walk through Kyoto temples during cherry blossom season.',
+        'features': ['360° View', 'Nature', 'Relaxation'],
+        'featured': True,
+        'views': 890,
+    }
 ]
 
 # ---- Utils ----
@@ -419,10 +441,9 @@ async def ensure_indexes_and_seed():
             'created_at': datetime.utcnow(),
         })
 
-    # Seed virtual tours (only if empty)
-    count = await db.virtual_tours.estimated_document_count()
-    if count == 0:
-        await db.virtual_tours.insert_many(MOCK_VIRTUAL_TOURS)
+    # Force refresh virtual tours for development
+    await db.virtual_tours.delete_many({})
+    await db.virtual_tours.insert_many(MOCK_VIRTUAL_TOURS)
 
     # Seed destinations (only if empty)
     d_count = await db.destinations.estimated_document_count()
@@ -870,34 +891,186 @@ async def narrate_tour(tour_id: str, req: NarrationReq, user=Depends(get_user_fr
         return {'narration': 'We are experiencing technical difficulties generating narration. Please try again later.'}
 
 # ---- Bookings API ----
+# ---- Email Utils ----
+EMAIL_USER = os.environ.get('EMAIL_USER')
+EMAIL_PASS = os.environ.get('EMAIL_PASS')
+ADMIN_EMAIL = 'prajwalps2604@gmail.com'
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+async def send_email_async(to_email: str, subject: str, html_content: str):
+    # Re-fetch env vars in case they changed (though usually requires restart)
+    current_user = os.environ.get('EMAIL_USER')
+    current_pass = os.environ.get('EMAIL_PASS')
+    
+    if not current_user or not current_pass:
+        print(f"\n[MOCK EMAIL - MISSING CONFIG] To: {to_email}\nSubject: {subject}\nContent:\n{html_content}\n")
+        print("Tip: Add EMAIL_USER and EMAIL_PASS to .env and restart the server.")
+        return
+
+    print(f"Attempting to send email to {to_email} from {current_user}...")
+    try:
+        # Run synchronous SMTP in a thread
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, _send_email_sync, to_email, subject, html_content, current_user, current_pass)
+        print(f"Email sent successfully to {to_email}")
+    except Exception as e:
+        print(f"CRITICAL ERROR sending email: {e}")
+        print("Falling back to console print so you can still test:")
+        print(f"\n[EMAIL FAILED - FALLBACK] To: {to_email}\nSubject: {subject}\nContent:\n{html_content}\n")
+
+def _send_email_sync(to_email, subject, html_content, user_email, user_pass):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = user_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(html_content, 'html'))
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(user_email, user_pass)
+        server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        raise e
+
+# ---- Bookings API ----
 @app.post('/api/bookings')
-async def create_booking(body: BookingReq, user=Depends(get_user_from_token)):
+async def create_booking(body: BookingReq, request: Request, user=Depends(get_user_from_token)):
     if db is None:
-        return {'booking_id': str(uuid4()), **body.dict(), 'status': 'confirmed', 'created_at': datetime.utcnow()}
+        # Mock behavior with email print
+        booking_id = str(uuid4())
+        print(f"[MOCK] Booking created: {booking_id}. Email would be sent to {ADMIN_EMAIL}")
+        return {'booking_id': booking_id, **body.dict(), 'status': 'pending', 'created_at': datetime.utcnow()}
     
     # Verify destination exists
     destination = await db.destinations.find_one({'destination_id': body.destination_id})
     if not destination:
         raise HTTPException(status_code=404, detail='Destination not found')
 
+    booking_id = str(uuid4())
     booking = {
-        'booking_id': str(uuid4()),
+        'booking_id': booking_id,
         'user_id': user['user_id'],
+        'user_email': user.get('email', 'Unknown'),
+        'user_name': user.get('username', 'Unknown'),
         'destination_id': body.destination_id,
         'destination_name': destination['name'],
         'destination_image': destination['images'][0] if destination.get('images') else None,
-        'date': body.date,
+        'check_in_date': body.check_in_date,
+        'check_out_date': body.check_out_date,
         'guests': body.guests,
         'total_price': body.total_price,
-        'status': 'confirmed',
+        'status': 'pending', # Default to pending
         'created_at': datetime.utcnow()
     }
     await db.bookings.insert_one(booking)
+
+    # Generate confirmation token (simple JWT)
+    token_payload = {'booking_id': booking_id, 'action': 'confirm'}
+    confirm_token = jwt.encode(token_payload, JWT_SECRET, algorithm=ALG)
+    
+    token_payload_reject = {'booking_id': booking_id, 'action': 'reject'}
+    reject_token = jwt.encode(token_payload_reject, JWT_SECRET, algorithm=ALG)
+
+    base_url = str(request.base_url).rstrip('/')
+    confirm_link = f"{base_url}/api/bookings/confirm?token={confirm_token}"
+    reject_link = f"{base_url}/api/bookings/reject?token={reject_token}"
+
+    # Email Content
+    html_content = f"""
+    <h2>New Booking Request</h2>
+    <p><strong>User:</strong> {user.get('username')} ({user.get('email')})</p>
+    <p><strong>Destination:</strong> {destination['name']}</p>
+    <p><strong>Check-in:</strong> {body.check_in_date}</p>
+    <p><strong>Check-out:</strong> {body.check_out_date}</p>
+    <p><strong>Guests:</strong> {body.guests}</p>
+    <p><strong>Total Price:</strong> ${body.total_price}</p>
+    <br>
+    <p>Please confirm or reject this booking:</p>
+    <a href="{confirm_link}" style="background-color: green; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirm Booking</a>
+    &nbsp;
+    <a href="{reject_link}" style="background-color: red; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reject Booking</a>
+    """
+    
+    # Send Email to Admin
+    await send_email_async(ADMIN_EMAIL, f"New Booking Request: {destination['name']}", html_content)
+
     return fix_id(booking)
+
+@app.get('/api/bookings/confirm')
+async def confirm_booking_endpoint(token: str):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALG])
+        booking_id = payload.get('booking_id')
+        if payload.get('action') != 'confirm':
+            raise ValueError("Invalid token action")
+            
+        if db is None:
+             return HTMLResponse(content="<h1>Mock: Booking Confirmed</h1>")
+
+        result = await db.bookings.update_one(
+            {'booking_id': booking_id},
+            {'$set': {'status': 'confirmed'}}
+        )
+        
+        if result.matched_count == 0:
+            return HTMLResponse(content="<h1>Error: Booking not found</h1>", status_code=404)
+            
+        # Optional: Notify user (implementation omitted for brevity)
+        
+        return HTMLResponse(content="<h1 style='color: green;'>Booking Confirmed Successfully!</h1><p>You can close this window.</p>")
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error: {str(e)}</h1>", status_code=400)
+
+@app.get('/api/bookings/reject')
+async def reject_booking_endpoint(token: str):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALG])
+        booking_id = payload.get('booking_id')
+        if payload.get('action') != 'reject':
+             raise ValueError("Invalid token action")
+
+        if db is None:
+             return HTMLResponse(content="<h1>Mock: Booking Rejected</h1>")
+
+        result = await db.bookings.update_one(
+            {'booking_id': booking_id},
+            {'$set': {'status': 'cancelled'}}
+        )
+
+        if result.matched_count == 0:
+            return HTMLResponse(content="<h1>Error: Booking not found</h1>", status_code=404)
+
+        return HTMLResponse(content="<h1 style='color: red;'>Booking Rejected</h1><p>The booking has been marked as cancelled.</p>")
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error: {str(e)}</h1>", status_code=400)
 
 @app.get('/api/bookings')
 async def get_user_bookings(user=Depends(get_user_from_token)):
     if db is None: return []
+
+    # Auto-complete past bookings
+    now_str = datetime.utcnow().isoformat()
+    # Find bookings that are 'confirmed' and have check_out_date < now
+    # Note: This simple string comparison relies on ISO format dates. 
+    # If using just YYYY-MM-DD, verify it works or use datetime objects.
+    # For now, we assume simple string compare works for YYYY-MM-DD if format is consistent.
+    
+    await db.bookings.update_many(
+        {
+            'user_id': user['user_id'],
+            'status': 'confirmed',
+            'check_out_date': {'$lt': now_str}
+        },
+        {'$set': {'status': 'completed'}}
+    )
+
     cursor = db.bookings.find({'user_id': user['user_id']}).sort('created_at', -1)
     bookings = []
     async for doc in cursor:

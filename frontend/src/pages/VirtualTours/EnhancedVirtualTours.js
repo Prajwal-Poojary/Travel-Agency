@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Camera, 
-  Play, 
-  Globe, 
-  Headphones, 
-  Star, 
-  MapPin, 
-  Clock, 
-  Eye, 
-  ExternalLink, 
-  Volume2, 
+import {
+  Camera,
+  Play,
+  Globe,
+  Headphones,
+  Star,
+  MapPin,
+  Clock,
+  Eye,
+  ExternalLink,
+  Volume2,
   Maximize,
   Search,
   X,
@@ -20,7 +20,10 @@ import {
   Share2,
   Heart,
   Bookmark,
-  List
+  List,
+  Compass,
+  Radio,
+  Plane
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { apiService } from '../../services/api';
@@ -35,21 +38,31 @@ const EnhancedVirtualTours = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [playerError, setPlayerError] = useState(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [narrationText, setNarrationText] = useState('');
   const [isNarrating, setIsNarrating] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const playerRef = useRef(null);
+
+  const categories = [
+    { id: 'all', label: 'All Experiences', icon: Globe },
+    { id: '360_video', label: '360° Tours', icon: Compass },
+    { id: 'live_cam', label: 'Live Cams', icon: Radio },
+    { id: 'drone_video', label: 'Drone Views', icon: Plane },
+  ];
+
+
 
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
 
   // Fetch virtual tours list
   const { data: toursData, isLoading, error } = useQuery(
-    ['virtual-tours', searchTerm, selectedFilter],
-    () => apiService.getVirtualTours({ search: searchTerm, type: selectedFilter !== 'all' ? selectedFilter : undefined }),
+    ['virtual-tours', searchTerm, activeCategory],
+    () => apiService.getVirtualTours({ search: searchTerm }), // Client-side filtering for now since backend mock is simple
     { keepPreviousData: true }
   );
 
@@ -61,6 +74,15 @@ const EnhancedVirtualTours = () => {
     () => apiService.getFeaturedVirtualTours(6),
     { staleTime: 10 * 60 * 1000 }
   );
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (!featuredTours || featuredTours.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % Math.min(featuredTours.length, 5));
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [featuredTours]);
 
   // Favorites
   const { data: favoritesData, refetch: refetchFavorites } = useQuery(
@@ -113,7 +135,7 @@ const EnhancedVirtualTours = () => {
           const cmd = next ? 'playVideo' : 'pauseVideo';
           iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*');
         }
-      } catch {}
+      } catch { }
       return next;
     });
   };
@@ -126,7 +148,6 @@ const EnhancedVirtualTours = () => {
   };
 
   const toggleMute = () => setIsMuted(!isMuted);
-  const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
 
   const formatYouTubeEmbedUrl = (url) => {
     if (!url) return '';
@@ -143,13 +164,20 @@ const EnhancedVirtualTours = () => {
         const vid = u.pathname.replace('/', '');
         if (vid) return `https://www.youtube.com/embed/${vid}`;
       }
-    } catch {}
+    } catch { }
     return url;
   };
 
-  const filteredTours = favoritesOnly
-    ? (favoritesData?.items || [])
-    : (tours || []);
+  /* Filter Logic with activeCategory */
+  const filteredTours = (tours || []).filter(tour => {
+    if (favoritesOnly) return favoriteIds.has(tour.tour_id);
+    if (activeCategory === 'all') return true;
+    // Map backend types if needed, or simple match
+    if (activeCategory === '360_video') return tour.tour_type === '360_video' || tour.tour_type === 'drone_360';
+    if (activeCategory === 'live_cam') return tour.tour_type === 'live_cam';
+    if (activeCategory === 'drone_video') return tour.tour_type === 'drone_video';
+    return true;
+  });
 
   const handleToggleFavorite = (tour) => {
     if (!isAuthenticated) {
@@ -235,44 +263,105 @@ const EnhancedVirtualTours = () => {
           </div>
         </motion.div>
 
-        {/* Featured Tours */}
+        {/* Hero Carousel */}
         {featuredTours && featuredTours.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="mb-12">
-            <h2 className="text-3xl font-bold text-white mb-6 text-center">Featured Tours</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredTours.slice(0, 3).map((tour, index) => (
-                <motion.div key={tour.tour_id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} whileHover={{ y: -5, scale: 1.02 }} className="glass rounded-xl overflow-hidden cursor-pointer group relative" onClick={() => handleTourClick(tour)}>
-                  <div className="absolute top-2 left-2 z-10"><span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-1 rounded-full text-xs font-bold">FEATURED</span></div>
-                  <div className="relative h-48 overflow-hidden">
-                    <img src={tour.thumbnail} alt={tour.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute top-4 right-4 w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center"><Play className="w-6 h-6 text-white ml-1" /></div>
+          <div className="relative h-[500px] w-full rounded-3xl overflow-hidden mb-16 shadow-2xl group">
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="absolute inset-0"
+              >
+                <img
+                  src={featuredTours[currentSlide]?.thumbnail}
+                  alt={featuredTours[currentSlide]?.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+
+                <div className="absolute bottom-0 left-0 p-12 w-full max-w-4xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    {featuredTours[currentSlide]?.tour_type === 'live_cam' && (
+                      <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse flex items-center gap-2">
+                        <div className="w-2 h-2 bg-white rounded-full" /> LIVE
+                      </span>
+                    )}
+                    <span className="bg-primary-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      Featured
+                    </span>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-white mb-2">{tour.name}</h3>
-                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">{tour.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-xs text-gray-400">
-                        <div className="flex items-center gap-1"><Clock className="w-4 h-4" /><span>{tour.duration}</span></div>
-                        <div className="flex items-center gap-1"><MapPin className="w-4 h-4" /><span>{tour.country}</span></div>
-                      </div>
-                      <button onClick={(e) => { e.stopPropagation(); handleToggleFavorite(tour); }} className={`w-8 h-8 rounded-full flex items-center justify-center ${favoriteIds.has(tour.tour_id) ? 'bg-red-500' : 'bg-gray-700 hover:bg-gray-600'}`}>
-                        <Heart className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
+                  <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
+                    {featuredTours[currentSlide]?.name}
+                  </h2>
+                  <p className="text-xl text-gray-200 mb-8 line-clamp-2 max-w-2xl">
+                    {featuredTours[currentSlide]?.description}
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handleTourClick(featuredTours[currentSlide])}
+                      className="bg-white text-black px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <Play className="w-5 h-5 fill-black" /> Start Experience
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleToggleFavorite(featuredTours[currentSlide]); }}
+                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 border-white/30 backdrop-blur-sm hover:bg-white/10 transition-colors ${favoriteIds.has(featuredTours[currentSlide]?.tour_id) ? 'bg-red-500 border-red-500' : ''}`}
+                    >
+                      <Heart className={`w-6 h-6 ${favoriteIds.has(featuredTours[currentSlide]?.tour_id) ? 'fill-white text-white' : 'text-white'}`} />
+                    </button>
                   </div>
-                </motion.div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Carousel Indicators */}
+            <div className="absolute bottom-6 right-6 flex gap-2 z-10">
+              {featuredTours.slice(0, 5).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`w-3 h-3 rounded-full transition-all ${currentSlide === idx ? 'bg-white w-8' : 'bg-white/50 hover:bg-white'}`}
+                />
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* All Tours Grid */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }}>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white">{favoritesOnly ? 'My Favorite Tours' : 'All Virtual Tours'}</h2>
-            <div className="text-gray-300 text-sm">{filteredTours.length} tours available</div>
+        {/* Filters & Grid */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
+          {/* Category Tabs */}
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => { setActiveCategory(cat.id); setFavoritesOnly(false); }}
+                className={`px-6 py-3 rounded-full flex items-center gap-2 transition-all ${activeCategory === cat.id && !favoritesOnly
+                  ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                  }`}
+              >
+                <cat.icon className="w-5 h-5" />
+                {cat.label}
+              </button>
+            ))}
           </div>
+
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold text-white">
+              {favoritesOnly ? 'Your Favorites' : (categories.find(c => c.id === activeCategory)?.label || 'All Experiences')}
+            </h3>
+            <button
+              onClick={() => setFavoritesOnly(!favoritesOnly)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${favoritesOnly ? 'text-red-400' : 'text-gray-400 hover:text-white'}`}
+            >
+              <Heart className={`w-5 h-5 ${favoritesOnly ? 'fill-current' : ''}`} />
+              <span>{favoritesOnly ? 'Show All' : 'Show Favorites'}</span>
+            </button>
+          </div>
+
 
           {isLoading ? (
             <div className="flex justify-center py-20"><LoadingSpinner size="large" text="Loading virtual tours..." /></div>
@@ -281,7 +370,7 @@ const EnhancedVirtualTours = () => {
               <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-white mb-2">No tours found</h3>
               <p className="text-gray-300 mb-6">Try adjusting your search or filters</p>
-              <button onClick={() => { setSearchTerm(''); setSelectedFilter('all'); setFavoritesOnly(false); }} className="btn-gradient px-6 py-3 rounded-lg">Clear Filters</button>
+              <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); setFavoritesOnly(false); }} className="btn-gradient px-6 py-3 rounded-lg">Clear Filters</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -363,10 +452,17 @@ const EnhancedVirtualTours = () => {
                                 {isPlaying ? (<Pause className="w-5 h-5 text-white" />) : (<Play className="w-5 h-5 text-white ml-1" />)}
                               </button>
                               <div className="flex-1 flex items-center gap-2">
-                                <span className="text-white text-sm">{Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}</span>
-                                <div className="flex-1 bg-gray-600 rounded-full h-1">
-                                  <div className="bg-primary-500 h-1 rounded-full transition-all" style={{ width: `${(currentTime / 600) * 100}%` }} />
-                                </div>
+                                <span className="text-white text-sm">
+                                  {selectedTour.tour_type === 'live_cam' ? 'LIVE' : `${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, '0')}`}
+                                </span>
+                                {selectedTour.tour_type !== 'live_cam' && (
+                                  <div className="flex-1 bg-gray-600 rounded-full h-1">
+                                    <div className="bg-primary-500 h-1 rounded-full transition-all" style={{ width: `${(currentTime / 600) * 100}%` }} />
+                                  </div>
+                                )}
+                                {selectedTour.tour_type === 'live_cam' && (
+                                  <span className="flex-1 text-red-500 font-bold text-xs tracking-widest animate-pulse ml-2">• LIVE BROADCAST</span>
+                                )}
                                 <span className="text-white text-sm">{selectedTour.duration}</span>
                               </div>
                               <button onClick={toggleMute} className="w-8 h-8 flex items-center justify-center text-white hover:text-primary-400 transition-colors">
@@ -438,6 +534,7 @@ const EnhancedVirtualTours = () => {
           )}
         </AnimatePresence>
       </div>
+
     </div>
   );
 };

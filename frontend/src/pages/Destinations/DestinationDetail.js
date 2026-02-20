@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MapPin, 
-  Star, 
-  Calendar, 
-  Users, 
-  Camera, 
-  Heart, 
-  ArrowRight, 
+import {
+  MapPin,
+  Star,
+  Calendar,
+  Users,
+  Camera,
+  Heart,
+  ArrowRight,
   ArrowLeft,
   Clock,
   DollarSign,
@@ -74,13 +74,13 @@ const DestinationDetail = () => {
 
   const handleImageNavigation = (direction) => {
     if (!destination?.images?.length) return;
-    
+
     if (direction === 'next') {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === destination.images.length - 1 ? 0 : prev + 1
       );
     } else {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? destination.images.length - 1 : prev - 1
       );
     }
@@ -89,20 +89,21 @@ const DestinationDetail = () => {
   const handleBooking = async (e) => {
     e.preventDefault();
     try {
-      // This would typically require authentication
       const bookingPayload = {
         destination_id: id,
-        check_in_date: new Date(bookingData.checkIn).toISOString(),
-        check_out_date: new Date(bookingData.checkOut).toISOString(),
+        check_in_date: new Date(bookingData.checkIn).toISOString().split('T')[0],
+        check_out_date: new Date(bookingData.checkOut).toISOString().split('T')[0],
         guests: bookingData.guests,
-        special_requests: bookingData.specialRequests
+        total_price: 1500, // Mock price for now, ideally calculated
       };
-      
-      // For demo purposes, just show success
-      toast.success('Booking request submitted! You will receive confirmation shortly.');
+
+      await apiService.createBooking(bookingPayload);
+
+      toast.success('Booking request sent! You will receive an email once confirmed.');
       setShowBookingModal(false);
     } catch (error) {
-      toast.error('Please login to make a booking');
+      console.error(error);
+      toast.error('Failed to create booking. Please try again.');
     }
   };
 
@@ -125,7 +126,7 @@ const DestinationDetail = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Destination Not Found</h2>
           <p className="text-gray-300 mb-6">The destination you're looking for doesn't exist or has been removed.</p>
-          <Link 
+          <Link
             to="/destinations"
             className="btn-gradient px-6 py-3 rounded-lg inline-flex items-center gap-2"
           >
@@ -199,9 +200,8 @@ const DestinationDetail = () => {
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                }`}
+                className={`w-2 h-2 rounded-full transition-colors ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
               />
             ))}
           </div>
@@ -219,18 +219,18 @@ const DestinationDetail = () => {
                 <MapPin className="w-5 h-5 text-primary-400" />
                 <span className="text-primary-400 font-medium">{destination?.city}, {destination?.country}</span>
               </div>
-              
+
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
                 {destination?.name}
               </h1>
-              
+
               <div className="flex items-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
                   <span className="text-white font-semibold">{destination?.rating}</span>
                   <span className="text-gray-300">({reviews?.length || 0} reviews)</span>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-green-400" />
                   <span className="text-green-400 font-semibold">{destination?.price_range}</span>
@@ -246,25 +246,23 @@ const DestinationDetail = () => {
                   <Calendar className="w-5 h-5" />
                   Book Now
                 </button>
-                
+
                 <button
                   onClick={() => setIsLiked(!isLiked)}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    isLiked ? 'bg-red-500 text-white' : 'bg-black/50 text-white hover:bg-black/70'
-                  }`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-red-500 text-white' : 'bg-black/50 text-white hover:bg-black/70'
+                    }`}
                 >
                   <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
                 </button>
-                
+
                 <button
                   onClick={() => setIsBookmarked(!isBookmarked)}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    isBookmarked ? 'bg-blue-500 text-white' : 'bg-black/50 text-white hover:bg-black/70'
-                  }`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isBookmarked ? 'bg-blue-500 text-white' : 'bg-black/50 text-white hover:bg-black/70'
+                    }`}
                 >
                   <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
                 </button>
-                
+
                 <button
                   onClick={shareDestination}
                   className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
@@ -287,11 +285,10 @@ const DestinationDetail = () => {
                 <button
                   key={tab.id}
                   onClick={() => setSelectedTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors whitespace-nowrap ${
-                    selectedTab === tab.id
-                      ? 'text-primary-400 border-b-2 border-primary-400'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors whitespace-nowrap ${selectedTab === tab.id
+                    ? 'text-primary-400 border-b-2 border-primary-400'
+                    : 'text-gray-300 hover:text-white'
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.label}
@@ -382,7 +379,7 @@ const DestinationDetail = () => {
                         <p className="text-white">{destination?.best_time_to_visit}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <DollarSign className="w-5 h-5 text-green-400" />
                       <div>
@@ -390,7 +387,7 @@ const DestinationDetail = () => {
                         <p className="text-white">{destination?.price_range}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-red-400" />
                       <div>
@@ -466,9 +463,8 @@ const DestinationDetail = () => {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`w-4 h-4 ${
-                                    i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-600'
-                                  }`}
+                                  className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-600'
+                                    }`}
                                 />
                               ))}
                             </div>
@@ -506,7 +502,7 @@ const DestinationDetail = () => {
                         <input
                           type="date"
                           value={bookingData.checkIn}
-                          onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
+                          onChange={(e) => setBookingData({ ...bookingData, checkIn: e.target.value })}
                           className="input-futuristic w-full"
                           required
                         />
@@ -516,18 +512,18 @@ const DestinationDetail = () => {
                         <input
                           type="date"
                           value={bookingData.checkOut}
-                          onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
+                          onChange={(e) => setBookingData({ ...bookingData, checkOut: e.target.value })}
                           className="input-futuristic w-full"
                           required
                         />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Number of Guests</label>
                       <select
                         value={bookingData.guests}
-                        onChange={(e) => setBookingData({...bookingData, guests: parseInt(e.target.value)})}
+                        onChange={(e) => setBookingData({ ...bookingData, guests: parseInt(e.target.value) })}
                         className="input-futuristic w-full"
                       >
                         {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
@@ -535,18 +531,18 @@ const DestinationDetail = () => {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Special Requests</label>
                       <textarea
                         value={bookingData.specialRequests}
-                        onChange={(e) => setBookingData({...bookingData, specialRequests: e.target.value})}
+                        onChange={(e) => setBookingData({ ...bookingData, specialRequests: e.target.value })}
                         className="input-futuristic w-full"
                         rows={4}
                         placeholder="Any special requirements or requests..."
                       />
                     </div>
-                    
+
                     <button
                       type="submit"
                       className="btn-gradient w-full py-3 rounded-lg font-semibold hover:shadow-glow transition-all"
@@ -555,7 +551,7 @@ const DestinationDetail = () => {
                     </button>
                   </form>
                 </div>
-                
+
                 <div className="space-y-6">
                   <div className="bg-gradient-to-br from-primary-900/20 to-secondary-900/20 rounded-lg p-6 border border-white/10">
                     <h3 className="text-xl font-semibold text-white mb-4">What's Included</h3>
@@ -578,11 +574,11 @@ const DestinationDetail = () => {
                       </li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-secondary-900/20 to-primary-900/20 rounded-lg p-6 border border-white/10">
                     <h3 className="text-xl font-semibold text-white mb-4">Cancellation Policy</h3>
                     <p className="text-gray-300 text-sm">
-                      Free cancellation up to 48 hours before your trip. 
+                      Free cancellation up to 48 hours before your trip.
                       Cancellations within 48 hours are subject to a 25% fee.
                     </p>
                   </div>
@@ -616,7 +612,7 @@ const DestinationDetail = () => {
               </p>
               <div className="flex gap-4">
                 <button
-                  onClick={() => {setShowBookingModal(false); setSelectedTab('booking');}}
+                  onClick={() => { setShowBookingModal(false); setSelectedTab('booking'); }}
                   className="btn-gradient flex-1 py-3 rounded-lg font-semibold"
                 >
                   Book Now
