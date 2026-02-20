@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Star, 
-  Calendar, 
+import {
+  Search,
+  Filter,
+  MapPin,
+  Star,
+  Calendar,
   DollarSign,
   Grid,
   List,
@@ -85,7 +85,7 @@ const Destinations = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Error Loading Destinations</h2>
           <p className="text-gray-300 mb-6">Please try again later</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="btn-gradient px-6 py-3 rounded-lg"
           >
@@ -150,7 +150,7 @@ const Destinations = () => {
                 <Filter className="w-4 h-4" />
                 Filters
               </button>
-              
+
               {(searchTerm || Object.values(filters).some(v => v)) && (
                 <button
                   onClick={clearFilters}
@@ -166,21 +166,19 @@ const Destinations = () => {
               <span className="text-gray-300 text-sm">
                 {destinations?.length || 0} destinations found
               </span>
-              
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid' ? 'bg-primary-500 text-white' : 'glass hover:bg-white/10'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-primary-500 text-white' : 'glass hover:bg-white/10'
+                    }`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list' ? 'bg-primary-500 text-white' : 'glass hover:bg-white/10'
-                  }`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-primary-500 text-white' : 'glass hover:bg-white/10'
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -293,21 +291,19 @@ const Destinations = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className={`glass rounded-2xl overflow-hidden hover:shadow-glow transition-all duration-300 group ${
-                    viewMode === 'list' ? 'flex flex-col md:flex-row' : ''
-                  }`}
+                  className={`glass rounded-2xl overflow-hidden hover:shadow-glow transition-all duration-300 group ${viewMode === 'list' ? 'flex flex-col md:flex-row' : ''
+                    }`}
                 >
                   {/* Image */}
-                  <div className={`relative overflow-hidden ${
-                    viewMode === 'list' ? 'md:w-1/3 h-64 md:h-auto' : 'h-64'
-                  }`}>
+                  <div className={`relative overflow-hidden ${viewMode === 'list' ? 'md:w-1/3 h-64 md:h-auto' : 'h-64'
+                    }`}>
                     <img
                       src={destination.images?.[0] || '/api/placeholder/400/300'}
                       alt={destination.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    
+
                     {/* Overlay Info */}
                     <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
                       <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
@@ -334,7 +330,7 @@ const Destinations = () => {
                     <div>
                       <h3 className="text-xl font-bold text-white mb-2">{destination.name}</h3>
                       <p className="text-gray-300 mb-4 line-clamp-3">{destination.description}</p>
-                      
+
                       {/* Activities */}
                       <div className="flex flex-wrap gap-2 mb-4">
                         {destination.activities?.slice(0, 3).map((activity, i) => (
@@ -362,10 +358,10 @@ const Destinations = () => {
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-green-400" />
                         <span className="text-green-400 font-semibold text-sm">
-                          {destination.price_range}
+                          {destination.price ? `${destination.price}` : destination.price_range?.replace(/^\$/, '') || 'N/A'}
                         </span>
                       </div>
-                      
+
                       <Link
                         to={`/destinations/${destination.destination_id}`}
                         className="btn-gradient px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center gap-2"

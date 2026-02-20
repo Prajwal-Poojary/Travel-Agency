@@ -357,3 +357,15 @@ select:focus {
   background: rgba(102, 126, 234, 0.3);
   color: #f8fafc;
 }
+
+/* Light Mode Overrides (Global Invert Strategy) */
+html.light {
+  filter: invert(1) hue-rotate(180deg);
+  background: #0f172a;
+}
+html.light img, 
+html.light video, 
+html.light iframe,
+html.light .no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}

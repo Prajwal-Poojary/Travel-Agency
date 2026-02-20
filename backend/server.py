@@ -94,6 +94,11 @@ class ProfileOut(BaseModel):
     avatar: Optional[str] = None
     created_at: datetime
 
+class ProfileUpdateBody(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    avatar: Optional[str] = None
+
 class ChatBody(BaseModel):
     message: str = Field(..., min_length=1, max_length=4000)
     session_id: Optional[str] = None
@@ -125,6 +130,7 @@ class Destination(BaseModel):
     images: List[str]
     rating: float
     price_range: str
+    price: Optional[float] = None
     activities: List[str]
     featured: bool
 
@@ -218,8 +224,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Japan',
         'duration': '12:45',
         'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/6kAqQWBH6V0/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=6kAqQWBH6V0',
+        'thumbnail': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Experience the neon-lit streets of Shinjuku and Shibuya in fully immersive 360°.',
         'features': ['360° View', 'City Walk', 'Nightlife'],
         'featured': True,
@@ -235,8 +241,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Greece',
         'duration': '9:03',
         'tour_type': 'drone_360',
-        'thumbnail': 'https://i.ytimg.com/vi/m2QK_wC9mE8/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=m2QK_wC9mE8',
+        'thumbnail': 'https://images.unsplash.com/photo-1613395877344-13d4c2ce5d4d?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'A breathtaking aerial 360° tour of Santorini’s blue domes and caldera views.',
         'features': ['Drone 360', 'Coastline', 'Sunset'],
         'featured': True,
@@ -249,8 +255,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'USA',
         'duration': 'LIVE',
         'tour_type': 'live_cam',
-        'thumbnail': 'https://i.ytimg.com/vi/1-iS7LArMPA/hqdefault_live.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=1-iS7LArMPA',
+        'thumbnail': 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Live streaming view of the heart of New York City.',
         'features': ['Live Stream', 'Cityscape', 'Crowds'],
         'featured': True,
@@ -263,8 +269,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Maldives',
         'duration': '04:15',
         'tour_type': 'drone_video',
-        'thumbnail': 'https://i.ytimg.com/vi/ysz5S6PUM-U/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=ysz5S6PUM-U',
+        'thumbnail': 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Cinematic drone footage of crystal clear waters and overwater bungalows.',
         'features': ['4K Resolution', 'Drone View', 'Relaxation'],
         'featured': False,
@@ -277,8 +283,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Iceland',
         'duration': '02:30',
         'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/7j1oWk1bV9U/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=7j1oWk1bV9U',
+        'thumbnail': 'https://images.unsplash.com/photo-1520769945061-0a448c4ece65?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Immersive 360 video of the Northern Lights dancing over snow-covered landscapes.',
         'features': ['360° View', 'Nature', 'Night Sky'],
         'featured': True,
@@ -291,8 +297,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Italy',
         'duration': 'LIVE',
         'tour_type': 'live_cam',
-        'thumbnail': 'https://i.ytimg.com/vi/ph1vpnYIxJk/hqdefault_live.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=ph1vpnYIxJk',
+        'thumbnail': 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Live view of the Grand Canal and Rialto Bridge in Venice.',
         'features': ['Live Stream', 'Historic', 'Waterway'],
         'featured': False,
@@ -305,8 +311,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Peru',
         'duration': '14:22',
         'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/2m8uRkJ8A_4/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=2m8uRkJ8A_4',
+        'thumbnail': 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Explore the ancient citadel with points-of-interest overlays.',
         'features': ['Interactive', 'Ruins', 'Mountains'],
         'featured': True,
@@ -319,8 +325,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'France',
         'duration': '11:11',
         'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/7A1tM6l5oMc/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=7A1tM6l5oMc',
+        'thumbnail': 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'A cultural 360° stroll through Louvre courtyards and nearby landmarks.',
         'features': ['Museums', 'Culture', 'City Walk'],
         'featured': False,
@@ -332,8 +338,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Switzerland',
         'duration': '05:45',
         'tour_type': 'drone_video',
-        'thumbnail': 'https://i.ytimg.com/vi/L0g5e3g3a0w/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=L0g5e3g3a0w',
+        'thumbnail': 'https://images.unsplash.com/photo-1531366936337-7785a610e20f?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Stunning 4K drone footage of the Swiss Alps in winter.',
         'features': ['Drone View', 'Mountains', 'Snow'],
         'featured': False,
@@ -345,8 +351,8 @@ MOCK_VIRTUAL_TOURS = [
         'country': 'Japan',
         'duration': '08:20',
         'tour_type': '360_video',
-        'thumbnail': 'https://i.ytimg.com/vi/3b5z8v2h4w0/hqdefault.jpg',
-        'video_url': 'https://www.youtube.com/watch?v=3b5z8v2h4w0',
+        'thumbnail': 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800',
+        'video_url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         'description': 'Relaxing 360° walk through Kyoto temples during cherry blossom season.',
         'features': ['360° View', 'Nature', 'Relaxation'],
         'featured': True,
@@ -516,6 +522,35 @@ async def profile(user=Depends(get_user_from_token)):
          return ProfileOut(
             user_id='mock_user_id', username='demo_user', email='demo@example.com', full_name='Demo User', avatar=None, created_at=datetime.utcnow()
         )
+    return ProfileOut(
+        user_id=user['user_id'], username=user['username'], email=user['email'], full_name=user.get('full_name',''), avatar=user.get('avatar'), created_at=user['created_at']
+    )
+
+@app.put('/api/auth/profile', response_model=ProfileOut)
+async def update_profile(body: ProfileUpdateBody, user=Depends(get_user_from_token)):
+    if user.get('user_id') == 'mock_user_id':
+         return ProfileOut(
+            user_id='mock_user_id', username='demo_user', email=body.email or 'demo@example.com', full_name=body.full_name or 'Demo User', avatar=body.avatar, created_at=datetime.utcnow()
+        )
+    
+    update_data = {}
+    if body.full_name is not None:
+        update_data['full_name'] = body.full_name
+    if body.email is not None:
+        # Check if email is taken
+        if body.email != user.get('email'):
+            existing = await db.users.find_one({'email': body.email})
+            if existing:
+                raise HTTPException(status_code=400, detail='Email is already in use')
+        update_data['email'] = body.email
+    if body.avatar is not None:
+        update_data['avatar'] = body.avatar
+        
+    if update_data:
+        await db.users.update_one({'user_id': user['user_id']}, {'$set': update_data})
+        # Fetch updated user
+        user = await db.users.find_one({'user_id': user['user_id']})
+        
     return ProfileOut(
         user_id=user['user_id'], username=user['username'], email=user['email'], full_name=user.get('full_name',''), avatar=user.get('avatar'), created_at=user['created_at']
     )
@@ -727,14 +762,57 @@ async def get_virtual_tour_countries():
 
 # ---- Destinations API (New) ----
 @app.get('/api/destinations')
-async def get_destinations(limit: int = 6):
-    if db is None:
-        return MOCK_DESTINATIONS[:limit]
-    cursor = db.destinations.find({}).limit(int(limit))
-    results = []
-    async for doc in cursor:
-        results.append(fix_id(doc))
-    return results
+async def get_destinations(
+    search: Optional[str] = Query(None),
+    country: Optional[str] = Query(None),
+    min_price: Optional[int] = Query(None),
+    max_price: Optional[int] = Query(None),
+    activity: Optional[str] = Query(None),
+    limit: int = 6
+):
+    try:
+        if db is None: raise Exception("Use Mock")
+        filters = {}
+        if search:
+            filters['$or'] = [
+                {'name': {'$regex': search, '$options': 'i'}},
+                {'description': {'$regex': search, '$options': 'i'}},
+                {'country': {'$regex': search, '$options': 'i'}},
+            ]
+        if country:
+            filters['country'] = country
+        if activity:
+            filters['activities'] = activity
+            
+        if min_price is not None or max_price is not None:
+            price_filter = {}
+            if min_price is not None:
+                price_filter['$gte'] = min_price
+            if max_price is not None:
+                price_filter['$lte'] = max_price
+            filters['price'] = price_filter
+            
+        cursor = db.destinations.find(filters).limit(int(limit))
+        results = []
+        async for doc in cursor:
+            results.append(fix_id(doc))
+                
+        return results
+    except Exception as e:
+        results = MOCK_DESTINATIONS
+        if search:
+            s = search.lower()
+            results = [t for t in results if s in t['name'].lower() or s in t.get('description','').lower() or s in t.get('country','').lower()]
+        if country:
+            results = [t for t in results if t.get('country') == country]
+        if activity:
+            results = [t for t in results if activity in t.get('activities', [])]
+        if min_price is not None:
+            results = [t for t in results if t.get('price', float('inf')) >= min_price]
+        if max_price is not None:
+            results = [t for t in results if t.get('price', 0) <= max_price]
+
+        return results[:limit]
 
 @app.get('/api/destinations/featured')
 async def get_featured_destinations(limit: int = 6):
