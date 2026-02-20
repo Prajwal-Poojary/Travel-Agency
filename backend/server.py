@@ -37,7 +37,7 @@ if not MONGO_URL:
 app = FastAPI(title='Advanced Travel Platform (FastAPI)', version='1.4.0')
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -614,8 +614,10 @@ async def chat(body: ChatBody, user=Depends(get_user_from_token)):
         text = getattr(result, 'text', None) or 'I could not generate a response. Please try again.'
         await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=text)
         return ChatOut(session_id=session_id, response=text, timestamp=datetime.utcnow())
-    except Exception:
-        err = 'I am experiencing technical difficulties. Please try again shortly.'
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        err = f'I am experiencing technical difficulties: {str(e)}'
         await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=err)
         return ChatOut(session_id=session_id, response=err, timestamp=datetime.utcnow())
 
