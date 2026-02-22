@@ -8,6 +8,6 @@ pymongo==4.6.1
 dnspython
 PyJWT
 passlib[bcrypt]
-bcrypt
+bcrypt<4.0.0
 python-multipart
 google-genai

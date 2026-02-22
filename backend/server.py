@@ -426,8 +426,11 @@ async def ensure_indexes_and_seed():
     await db.users.create_index('username', unique=True)
 
     # Chat sessions
-    await db.chat_sessions.create_index('session_id', unique=True)
-    await db.chat_sessions.create_index('user_id')
+    try:
+        await db.chat_sessions.drop_index('session_id_1')
+    except Exception:
+        pass
+    await db.chat_sessions.create_index([('session_id', 1), ('user_id', 1)], unique=True)
 
     # Favorites
     await db.favorites.create_index([('user_id', 1), ('tour_id', 1)], unique=True)
@@ -678,9 +681,15 @@ async def chat(body: ChatBody, user=Depends(get_user_from_token)):
     except Exception as e:
         import traceback
         traceback.print_exc()
-        err = f'I am experiencing technical difficulties: {str(e)}'
-        await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=err)
-        return ChatOut(session_id=session_id, response=err, timestamp=datetime.utcnow())
+        
+        # Any generated exception from Gemini should be bubbled up as a friendly response 
+        # instead of a crash so the frontend doesn't see a CORS error.
+        import logging
+        logging.error(f"Gemini API Error: {str(e)}")
+        
+        fallback = "I am currently receiving too many requests or experiencing a technical difficulty. Please try again in a few moments."
+        await upsert_session_message(user_id=user['user_id'], session_id=session_id, role='assistant', content=fallback)
+        return ChatOut(session_id=session_id, response=fallback, timestamp=datetime.utcnow())
 
 @app.post('/api/ai/recommendations')
 async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
