@@ -86,6 +86,13 @@ class LoginBody(BaseModel):
     email: str
     password: str
 
+class ForgotPasswordReq(BaseModel):
+    email: str
+
+class ResetPasswordReq(BaseModel):
+    token: str
+    new_password: str
+
 class ProfileOut(BaseModel):
     user_id: str
     username: str
@@ -555,6 +562,60 @@ async def update_profile(body: ProfileUpdateBody, user=Depends(get_user_from_tok
         user_id=user['user_id'], username=user['username'], email=user['email'], full_name=user.get('full_name',''), avatar=user.get('avatar'), created_at=user['created_at']
     )
 
+@app.post('/api/auth/forgot-password')
+async def forgot_password(body: ForgotPasswordReq):
+    if db is None:
+        return {'message': 'If an account exists, a password reset link will be sent.'}
+        
+    user = await db.users.find_one({'email': body.email})
+    if not user:
+        return {'message': 'If an account exists, a password reset link will be sent.'}
+        
+    payload = {
+        'user_id': user['user_id'],
+        'action': 'reset',
+        'exp': int((datetime.utcnow() + timedelta(minutes=15)).timestamp())
+    }
+    reset_token = jwt.encode(payload, JWT_SECRET, algorithm=ALG)
+    
+    base_url = CORS_ORIGINS[0] if CORS_ORIGINS else "http://localhost:3000"
+    reset_link = f"{base_url}/reset-password?token={reset_token}"
+    
+    html_content = f"""
+    <h2>Password Reset Request</h2>
+    <p>Hi {user.get('username', 'there')},</p>
+    <p>You requested a password reset. Click the button below to reset your password. This link is valid for 15 minutes.</p>
+    <br>
+    <a href="{reset_link}" style="background-color: #0ea5e9; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+    <br><br>
+    <p>If you didn't request this, you can safely ignore this email.</p>
+    """
+    
+    await send_email_async(body.email, "Password Reset", html_content)
+    return {'message': 'If an account exists, a password reset link will be sent.'}
+
+@app.post('/api/auth/reset-password')
+async def reset_password(body: ResetPasswordReq):
+    if db is None:
+        return {'message': 'Password has been reset successfully'}
+        
+    try:
+        payload = jwt.decode(body.token, JWT_SECRET, algorithms=[ALG])
+        if payload.get('action') != 'reset':
+            raise HTTPException(status_code=400, detail='Invalid token content')
+            
+        user_id = payload.get('user_id')
+        hashed_password = pwd_context.hash(body.new_password)
+        
+        res = await db.users.update_one({'user_id': user_id}, {'$set': {'password': hashed_password}})
+        if res.matched_count == 0:
+            raise HTTPException(status_code=404, detail='User not found')
+            
+        return {'message': 'Password has been reset successfully'}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail='Reset token has expired')
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=400, detail='Invalid reset token')
 
 
 @app.get('/api/chat/sessions')

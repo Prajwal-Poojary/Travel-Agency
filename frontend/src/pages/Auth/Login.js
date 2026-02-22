@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Globe } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -118,6 +117,15 @@ const Login = () => {
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
+              </div>
+              <div className="flex justify-end mt-2">
+                <Link
+                  to="/forgot-password"
+                  state={{ email: formData.email }}
+                  className="text-sm text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                >
+                  Forgot your password?
+                </Link>
               </div>
             </div>
 

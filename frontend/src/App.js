@@ -25,6 +25,8 @@ const Bookings = React.lazy(() => import('./pages/Bookings/EnhancedBookings'));
 const Profile = React.lazy(() => import('./pages/Profile/Profile'));
 const Login = React.lazy(() => import('./pages/Auth/Login'));
 const Register = React.lazy(() => import('./pages/Auth/Register'));
+const ForgotPassword = React.lazy(() => import('./pages/Auth/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('./pages/Auth/ResetPassword'));
 const AIAssistant = React.lazy(() => import('./pages/AIAssistant/EnhancedAIAssistant'));
 const VirtualTours = React.lazy(() => import('./pages/VirtualTours/EnhancedVirtualTours'));
 const FavoritesVirtualTours = React.lazy(() => import('./pages/VirtualTours/FavoritesVirtualTours'));
@@ -95,6 +97,8 @@ function App() {
                       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
                       <Route path="/virtual-tours" element={<ProtectedRoute><VirtualTours /></ProtectedRoute>} />
                       <Route path="/virtual-tours/favorites" element={<ProtectedRoute><FavoritesVirtualTours /></ProtectedRoute>} />
