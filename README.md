@@ -101,14 +101,27 @@ REACT_APP_BACKEND_URL=http://localhost:8001
 ```
 
 ### 3. Start the Application
+
+**For Local Development (Two Ports):**
 ```bash
-# Start both backend and frontend
+# Start both backend and frontend concurrently
 npm start
 ```
 
+**For Production / Cloudflare Tunnels (Single Port):**
+```bash
+# Build frontend and serve everything from the backend on port 8001
+npm run start:prod
+```
+
 ### 4. Access the Application
+
+**Development Mode:**
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8001
+
+**Production Mode (`start:prod`):**
+- **App & API**: http://localhost:8001
 - **Health Check**: http://localhost:8001/api/health
 
 ## 📡 API ENDPOINTS
@@ -189,7 +202,8 @@ Travel-Agency/
 
 **Root:**
 - `npm run install-all` - Install backend and frontend dependencies
-- `npm start` - Start both backend and frontend
+- `npm start` - Start both backend and frontend for local development
+- `npm run start:prod` - Build frontend and start the backend to serve both on a single port (production/Cloudflare ready)
 - `npm run start:backend` - Start backend only
 - `npm run start:frontend` - Start frontend only
 - `npm run build` - Build frontend for production

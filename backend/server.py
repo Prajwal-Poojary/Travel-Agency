@@ -5,8 +5,9 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, Depends, Header, Request, Query
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import jwt
@@ -486,6 +487,11 @@ async def on_start():
 # ---- Routes ----
 @app.get('/')
 async def root():
+    frontend_build_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build')
+    index_file = os.path.join(frontend_build_path, 'index.html')
+    if os.path.isfile(index_file):
+        from fastapi.responses import FileResponse
+        return FileResponse(index_file)
     return {'message': 'Advanced Travel Platform (FastAPI)', 'status': 'healthy', 'timestamp': datetime.utcnow().isoformat()}
 
 @app.get('/api/health')
@@ -1274,6 +1280,20 @@ async def delete_review(review_id: str, user=Depends(get_user_from_token)):
     if result.deleted_count == 0:
          raise HTTPException(status_code=404, detail='Review not found or permission denied')
     return {'message': 'Review deleted successfully'}
+
+# ---- Static Files for Production ----
+frontend_build_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build')
+if os.path.exists(frontend_build_path):
+    app.mount('/static', StaticFiles(directory=os.path.join(frontend_build_path, 'static')), name='static')
+    
+    @app.get('/{full_path:path}')
+    async def serve_react_app(full_path: str):
+        if full_path.startswith('api/'):
+            raise HTTPException(status_code=404, detail='Not Found')
+        file_path = os.path.join(frontend_build_path, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_build_path, 'index.html'))
 
 # ---- Run (handled by supervisor) ----
 # Do not add uvicorn.run here.
