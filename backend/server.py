@@ -671,7 +671,7 @@ async def chat(body: ChatBody, user=Depends(get_user_from_token)):
         result = await loop.run_in_executor(
             None,
             lambda: gemini_client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=body.message,
                 config=genai_types.GenerateContentConfig(
                     system_instruction='You are a helpful AI travel assistant. Keep answers focused, clear, and travel-specific when possible.',
@@ -710,7 +710,7 @@ async def ai_recommendations(prefs: RecReq, user=Depends(get_user_from_token)):
         result = await loop.run_in_executor(
             None,
             lambda: gemini_client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=prompt,
                 config=genai_types.GenerateContentConfig(max_output_tokens=600, temperature=0.5)
             )
