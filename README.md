@@ -85,7 +85,7 @@ npm run install-all
 ```
 
 ### 2. Environment Setup
-Create `.env` files in both backend and frontend directories:
+Create `.env` files in both backend and frontend directories (these files are ignored by Git for security reasons):
 
 **Backend (.env)**
 ```env

@@ -174,7 +174,7 @@ The MongoDB database relies heavily on the `motor` asynchronous driver. Importan
 ## 🚀 7. Deployment Instructions
 
 ### Local Development Environment
-1. Traverse into `/backend` and create a `.env` file configuring `MONGO_URL`, `JWT_SECRET_KEY`, `GEMINI_API_KEY`.
+1. Traverse into `/backend` and create a `.env` file (this file is ignored by Git for security) configuring `MONGO_URL`, `JWT_SECRET_KEY`, `GEMINI_API_KEY`.
 2. Ensure you have the corresponding frontend `.env` or point proxy to `http://localhost:8001`.
 3. In Root Directory: `npm run install-all`.
 4. Start both servers concurrently: `npm start`.

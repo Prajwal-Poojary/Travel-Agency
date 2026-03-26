@@ -45,7 +45,7 @@ npm install
 
 Setup environment variables:
 ```bash
-# Copy the local environment file
+# Copy the local environment file (since .env is ignored by Git)
 copy .env.local .env
 
 # Edit .env file with your preferred text editor
@@ -82,7 +82,7 @@ npm install
 
 Setup environment variables:
 ```bash
-# Copy the local environment file
+# Copy the local environment file (since .env is ignored by Git)
 copy .env.local .env
 
 # Edit .env file if needed
